@@ -21,13 +21,30 @@ final class MatmaOutput
                 JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
             ),
             'yaml' => Yaml::dump($payload, 4, 2),
-            'text' => sprintf(
-                '%s [%s] %s',
-                (string) ($payload['command'] ?? 'matma'),
-                (string) ($payload['status'] ?? 'unknown'),
-                (string) ($payload['message'] ?? ''),
-            ),
+            'text' => self::renderText($payload),
             default => throw new InvalidArgumentException('Unsupported output format.'),
         };
+    }
+    /** @param array<string, mixed> $payload */
+    private static function renderText(array $payload): string
+    {
+        $lines = [sprintf(
+            '%s [%s] %s',
+            (string) ($payload['command'] ?? 'matma'),
+            (string) ($payload['status'] ?? 'unknown'),
+            (string) ($payload['message'] ?? ''),
+        )];
+
+        foreach ($payload['diagnostics'] ?? [] as $diagnostic) {
+            $lines[] = sprintf(
+                '  %s:%d [%s] %s',
+                $diagnostic['source_file'],
+                $diagnostic['line'],
+                $diagnostic['code'],
+                $diagnostic['message'],
+            );
+        }
+
+        return implode(PHP_EOL, $lines);
     }
 }

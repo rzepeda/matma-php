@@ -1,0 +1,1 @@
+<?php namespace App\Vendor; class SkipMe {} 

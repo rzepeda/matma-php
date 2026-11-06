@@ -1,0 +1,1 @@
+<?php namespace Bad; use App\Domain\Status; use App\Domain\HasState; class UsesTraitAndEnum { use HasState; public function status(): Status { return Status::READY; } } 

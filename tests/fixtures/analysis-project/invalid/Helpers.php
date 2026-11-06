@@ -1,0 +1,1 @@
+<?php function test_helper(): bool { return true; } 

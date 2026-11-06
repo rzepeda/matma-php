@@ -47,11 +47,12 @@ abstract class MatmaCommand extends Command
         );
     }
 
-    private function report(
+    protected function report(
         string $status,
         string $message,
         int $exitCode,
         ?MatmaOptions $options,
+        array $details = [],
     ): int {
         $format = $this->option('format');
         $format = is_string($format) && in_array($format, ['text', 'json', 'yaml'], true)
@@ -67,6 +68,12 @@ abstract class MatmaCommand extends Command
 
         if ($options !== null) {
             $payload['options'] = $options->toArray();
+        }
+
+        foreach ($details as $key => $value) {
+            if (! array_key_exists($key, $payload)) {
+                $payload[$key] = $value;
+            }
         }
 
         $this->line(MatmaOutput::render($format, $payload));

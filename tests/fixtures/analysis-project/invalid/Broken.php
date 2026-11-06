@@ -1,0 +1,1 @@
+<?php namespace Bad; class Broken { public function wrong( { } 
