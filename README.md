@@ -4,9 +4,9 @@ MATMA is an agent-oriented testing architecture for PHP/Laravel. It preserves th
 
 ## Implementation status
 
-**Phase 1 package foundation is implemented and CI-verified.** Composer metadata, Laravel provider auto-discovery, four Artisan command **shells**, common flags, diagnostic serializers, and manually authored tests/mocks are present. **The AST indexer, source validation, scaffold generator, and impact resolver are not implemented yet.** Running the four shells returns nonzero exit code `2` with `not_implemented`; they do not write manifests or alter source files.
+**Phases 1 and 2 are implemented and CI-verified.** MATMA now discovers PHP symbols through an AST, validates Laravel/Composer PSR-4 naming, detects structural violations, and computes mirrored test/mock/manifest paths without creating them. **`matma:validate` is working.** `matma:index`, `matma:scaffold`, and `matma:impact` still return exit code 2 (`not_implemented`) until Phases 3–5. No Phase 2 operation modifies application files.
 
-Architecture: [accepted ADR](AIDocumentation/ARCHITECTURE_DECISIONS.md) · [task checklist](AIDocumentation/TASKS.md) · [Phase 1 implementation details](AIDocumentation/PHASE_1_IMPLEMENTATION.md)
+Architecture: [accepted ADR](AIDocumentation/ARCHITECTURE_DECISIONS.md) · [task checklist](AIDocumentation/TASKS.md) · [Phase 1 implementation details](AIDocumentation/PHASE_1_IMPLEMENTATION.md) · [Phase 2 implementation details](AIDocumentation/PHASE_2_IMPLEMENTATION.md)
 
 ## Compatibility
 
@@ -29,36 +29,38 @@ Laravel's Composer discovery registers `Matma\Php\MatmaServiceProvider`. If pack
 
 No public distribution or license grant is implied: package metadata currently uses `proprietary`.
 
-## Command interface (Phase 1 shells)
+## Artisan CLI: Phase 2 validator and future commands
 
 ```bash
 php artisan matma:index --source-root=app --tests-root=tests --format=json
 php artisan matma:scaffold --target=App\\Services\\DocumentParser
 php artisan matma:impact --target=App\\Services\\DocumentParser --level=2 --format=yaml
-php artisan matma:validate --check
+php artisan matma:validate --source-root=app --check --format=json
 ```
 
-These invocations currently **do not index, scaffold, analyze impact or validate production code**.
+**Only `matma:validate` currently performs its advertised operation.** It audits PHP ASTs and reports diagnostics without changing any source, test, mock or manifest files.
 
-| Command | Future responsibility |
+| Command | Current status / purpose |
 | --- | --- |
-| `matma:index` | Parse PHP ASTs, build forward/reverse dependency indexes, persist `.auto.yaml` manifests |
-| `matma:scaffold` | Create missing mirrored test and centralized mock files without overwriting existing work |
-| `matma:impact` | Use the persisted reverse-dependency index to select tests at an inclusive `--level` |
-| `matma:validate` | Audit class-file and mirror conventions without changing production code |
+| `matma:index` | Pending Phase 3: dependency graph and `.auto.yaml` persistence |
+| `matma:scaffold` | Pending Phase 4: non-destructive test/mock generation |
+| `matma:impact` | Pending Phase 5: manifest-only reverse-dependency test selection |
+| `matma:validate` | **Implemented:** read-only AST discovery, PSR-4 audit and source-mirror mapping |
 
 Shared flags: `--source-root/-s` (default `app/`), `--tests-root/-t` (`tests/`), `--scaffold/-S` (boolean), `--level/-l` (nonnegative integer, default 0), `--target/-f`, `--check/-c` (boolean), and `--format/-o` (`text`, `json`, or `yaml`).
 
 | Exit code | Meaning |
 | --- | --- |
-| `2` | Valid command invocation, operation not implemented yet |
+| `0` | Validator finished (with zero errors, or a non-strict diagnostic report) |
+| `1` | Strict validation violations, source-root or target missing |
+| `2` | Valid command invocation for an engine not yet implemented |
 | `64` | Invalid MATMA flag value (for example negative `--level`) |
 
-The standard shell response includes `command`, `status`, `message`, `exit_code`, and (for valid flags) `options`. JSON output is intended for coding agents.
+The response includes `command`, `status`, `message`, `exit_code`, and valid `options`. Validation adds `summary`, `files`, `symbol_to_source`, and line-level `diagnostics`. JSON is intended for agents; `--format=text|json|yaml` works. With `--check`, violations exit 1; without `--check`, they are reported with status `violations` and exit 0. Named classes, abstract classes and interfaces are testable; anonymous classes inherit their source-file test identity. Traits and enums are discoverable symbols but not standalone test targets. See [Phase 2](AIDocumentation/PHASE_2_IMPLEMENTATION.md).
 
 ## Manual test and mock topology
 
-During Phase 1 the mirrored tree is built **manually**, because `matma:scaffold` does not exist yet. Production PHP classes follow native PascalCase names; tests use PHPUnit's `*Test.php` suffix:
+Through Phase 2 the mirrored tree remains **manually authored**, because `matma:scaffold` does not exist yet. Production PHP classes follow native PascalCase names; tests use PHPUnit's `*Test.php` suffix:
 
 ```text
 src/Console/MatmaOptions.php
@@ -72,7 +74,7 @@ tests/regression/                       # non-mirrored E2E tests, future
 
 - **Unit:** target behavior is isolated; only useful boundary doubles are centralized.
 - **Interaction:** real CLI/option/output/provider interactions are exercised with Testbench.
-- **Business:** the four command shells are exercised as a workflow; no fabricated successful index or test run.
+- **Business:** actual validator checks and explicitly unfinished indexing/scaffolding/impact shells are exercised without fake success.
 - **Regression:** reserved for actual external/data E2E verification, not fake placeholder assertions.
 
 When scaffolding is implemented, its generated tests must **explicitly fail until assertions are authored**. The manual Phase 1 tests instead contain real, meaningful assertions about existing shell behavior.
@@ -81,8 +83,8 @@ When scaffolding is implemented, its generated tests must **explicitly fail unti
 
 In a Laravel application: `php artisan test` (the documented execution interface).
 
-To develop MATMA itself, install Composer dependencies and run `composer test`. The repository additionally includes a minimal Laravel 11 consumer under `tests/fixtures/laravel-app/` which installs MATMA through a Composer path repository and runs real `php artisan test` tests. GitHub Actions exercises both the package's PHPUnit suites and this native Laravel smoke test. [CI run 42277378877](https://github.com/rzepeda/matma-php/actions/runs/42277378877) passed all six jobs: five compatibility-matrix jobs (24 tests and 98 assertions each) plus the Laravel 11 consumer's `php artisan test` (3 tests and 10 assertions).
+To develop MATMA itself, install Composer dependencies and run `composer test`. The repository additionally includes a minimal Laravel 11 consumer under `tests/fixtures/laravel-app/` which installs MATMA through a Composer path repository and runs real `php artisan test` tests. GitHub Actions exercises both the package's PHPUnit suites and this native Laravel smoke test. [Phase 2 CI run 42285897847](https://github.com/rzepeda/matma-php/actions/runs/42285897847) passed all six jobs: five PHP/Laravel package combinations (51 package tests) plus the Laravel 11 consumer's `php artisan test`.
 
 ## Planned phases
 
-See [TASKS.md](AIDocumentation/TASKS.md). Later phases add AST symbol discovery, deterministic mirrored YAML generation, centralized mock/test scaffolding, impact queries and additional business/regression integration.
+See [TASKS.md](AIDocumentation/TASKS.md). Phase 3 builds persisted reverse-dependency YAML; Phase 4 adds non-destructive scaffolding; Phase 5 implements impact queries. Business/regression orchestration remains separate.

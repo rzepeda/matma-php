@@ -6,7 +6,8 @@ Source of truth: `matma_architecture_implementation_blueprint.md`; accepted PHP-
 
 - **Architectural decisions accepted and owner-verified:** The sole maintainer has explicitly accepted and verified the Phase 0 architecture decisions. No separate reviewer sign-off is required. This does **not** replace automated tests or Composer/CI compatibility checks.
 - **Phase 0 implementation tasks completed:** **0/5**. Final contracts, fixture verification, Composer constraints and CI are outstanding.
-- **Phase 1 implementation tasks completed and verified:** **5/5**. [CI run 42277378877](https://github.com/rzepeda/matma-php/actions/runs/42277378877) passed all six jobs (five PHP/Laravel package combinations plus the native Laravel app fixture).
+- **Phase 1 implementation tasks completed and verified:** **5/5**. [CI run 42277378877](https://github.com/rzepeda/matma-php/actions/runs/42277378877) passed all six jobs.
+- **Phase 2 implementation tasks completed and verified:** **6/6**. [CI run 42285897847](https://github.com/rzepeda/matma-php/actions/runs/42285897847) passed all six jobs.
 - **Work authored in Phase 1:** Composer package, Laravel provider, shared CLI options/output, explicit not-implemented command shells, manually mirrored tests and central mock, fixture app, and CI workflow. Shells are **not** working AST/scaffold/impact engines.
 - **Legend:** `[x]` means the task's full **Done when** condition is satisfied; `[ ]` means incomplete even when its architectural direction is accepted.
 
@@ -39,12 +40,14 @@ Source of truth: `matma_architecture_implementation_blueprint.md`; accepted PHP-
 
 ## Phase 2 — Deterministic symbol discovery and validation
 
-- [ ] **P2-01** Implement recursive PHP file inventory for the configurable source root; exclude vendor, tests, caches, and irrelevant directories.
-- [ ] **P2-02** Use `nikic/php-parser` AST nodes to extract namespace, primary class, imports/aliases, and relevant class references without using regex as an AST substitute.
-- [ ] **P2-03** Build source-symbol and symbol-source maps, detect duplicate or ambiguous symbols, and report parser errors with file/line context.
-- [ ] **P2-04** Implement source-to-mirror mapping for unit, interaction, mock, and `.auto.yaml` paths; assert deterministic resolution without project-wide searches at query time.
-- [ ] **P2-05** Implement `matma:validate` with structural checks (one primary class per file and filename-class naming); `--check` must fail on violations and provide text/JSON/YAML diagnostics.
-- [ ] **P2-06** Add fixtures for imports and aliases, nested namespaces, multiple classes, invalid syntax, case mismatches, and nondefault roots.
+**Status: 6/6 complete and CI-verified.** See [Phase 2 implementation](PHASE_2_IMPLEMENTATION.md).
+
+- [x] **P2-01** Implement recursive PHP file inventory for the configurable source root; exclude vendor, tests, caches, and irrelevant directories.
+- [x] **P2-02** Use `nikic/php-parser` AST nodes to extract namespace, primary class, imports/aliases, and relevant class references without using regex as an AST substitute.
+- [x] **P2-03** Build source-symbol and symbol-source maps, detect duplicate or ambiguous symbols, and report parser errors with file/line context.
+- [x] **P2-04** Implement source-to-mirror mapping for unit, interaction, mock, and `.auto.yaml` paths; assert deterministic resolution without project-wide searches at query time.
+- [x] **P2-05** Implement `matma:validate` with structural checks (one primary class per file and filename-class naming); `--check` must fail on violations and provide text/JSON/YAML diagnostics.
+- [x] **P2-06** Add fixtures for imports and aliases, nested namespaces, multiple classes, invalid syntax, case mismatches, and nondefault roots.
 
 ## Phase 3 — AST dependency indexer
 
@@ -91,4 +94,4 @@ Source of truth: `matma_architecture_implementation_blueprint.md`; accepted PHP-
 
 ## Implementation order
 
-Phase 1 is complete and CI-verified. The Phase 0 architectural decisions are accepted/owner-verified; detailed unresolved Phase 0 engineering contracts remain documented and are not all complete. Proceed to Phase 2 AST work, carrying forward those contracts. Preserve one coherent commit per future feature where practical and update checkboxes only after tests actually pass.
+Phases 1 and 2 are complete and CI-verified. Phase 0 architectural decisions are accepted/owner-verified; engineering contracts for Phase 3–5 remain tracked separately. Proceed to Phase 3 indexing: the Phase 2 AST reference inventory is not yet a persisted dependency graph. Preserve one coherent commit per future feature where practical and update checkboxes only after tests actually pass.

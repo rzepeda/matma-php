@@ -22,22 +22,22 @@ MATMA is a testing methodology and development tool. **It must adapt to the host
 - Preserve Laravel's native **PascalCase class filenames**, PSR-4 namespaces, and the project's existing directory layout.
 - Mirror source-relative directories inside the MATMA tiers under `tests/` for unit tests, interaction tests, mocks, and manifests.
 - Derive paths deterministically from the configured source root and source-relative path; do not search the repository at impact-query time.
-- Example (illustrative mirror naming; final naming/namespace contract must be tested):
+- Example (Phase 2's actual PHP test filename mapping):
 
 ```text
 app/Services/DocumentParser.php
-tests/unit/mirror/Services/TestDocumentParser.php
-tests/interaction/mirror/Services/TestDocumentParserInteraction.php
+tests/unit/mirror/Services/DocumentParserTest.php
+tests/interaction/mirror/Services/DocumentParserInteractionTest.php
 tests/mocks/mirror/Services/MockDocumentParser.php
 tests/mirror/Services/DocumentParser.auto.yaml
 ```
 
-- No automatic renaming of application classes or source files. Case handling, symlink behavior, namespace resolution, exclusions, and traversal order must be specified and tested across supported platforms before declaring P0-04 complete.
+- Phase 2 implemented this naming and mirror policy using `MirrorMapper` with real AST validation. No automatic renaming of application classes or source files. Case handling, symlink behavior, namespace resolution, exclusions, and traversal order must be specified and tested across supported platforms before declaring P0-04 complete.
 
 ### ADR-03 — Testable symbol scope (P0-03)
 - In scope: **named classes, abstract classes, interfaces, and anonymous classes**.
 - Anonymous classes **inherit the identity of their containing source file for test selection**; do not assign artificial standalone PSR-4 class identities. Multiple anonymous classes in one file may need internal AST identifiers for indexing, without changing the file-level test identity.
-- **Open detailed contract:** whether enums and traits are indexed only as dependencies or receive standalone test mirrors, and how multi-declaration files are validated. The scope above does not imply they are standalone test targets.
+- **Implemented Phase 2 rule:** traits and enums are indexed as named symbols for future dependency analysis, not independent test targets. More than one named class/interface in a source file is a structural error. Anonymous classes are numbered by AST order within their containing source file. Helper-only PHP files need not declare testable classes.
 
 ### ADR-04 — AST dependency graph (D02)
 - Index **actual AST references**, not unused `use` imports.
