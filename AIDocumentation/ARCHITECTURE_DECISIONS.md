@@ -1,6 +1,6 @@
 # MATMA PHP — Architecture Decision Record (ADR-001)
 
-**Status:** Accepted architectural direction; implementation contracts listed below remain open.  
+**Status:** Architectural decisions accepted and verified by the sole maintainer; implementation contracts listed below remain open.  
 **Date:** 2026-11-06  
 **Scope:** MATMA implementation for PHP 8.2+ and Laravel 11 onward.  
 **Basis:** `matma_architecture_implementation_blueprint.md` and subsequent project decisions.
@@ -93,6 +93,6 @@ These are **not accepted choices yet**; do not mistake recommendations for decis
 
 ## Acceptance and traceability
 
-Architectural decisions are accepted, **but implementation and verification tasks remain open**. P0-01 through P0-05 should only be marked done in `TASKS.md` once their documented acceptance criteria (including Composer constraints, fixtures, and CI where specified) are actually met. No package code, runtime tests, or CI checks are implied by this ADR.
+Architectural decisions have been **accepted and owner-verified**; no separate human reviewer is required. This sign-off is distinct from engineering acceptance. The Phase 1 Composer/Artisan package is implemented and passed CI on 2026-11-06 (see `PHASE_1_IMPLEMENTATION.md`). P0 tasks with outstanding AST-specific contracts remain open until their corresponding technical acceptance criteria are demonstrated.
 
 This ADR supersedes the earlier open-recommendations text in `AIDocumentation/ARCHITECTURE_DECISIONS.md`.

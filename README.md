@@ -4,7 +4,7 @@ MATMA is an agent-oriented testing architecture for PHP/Laravel. It preserves th
 
 ## Implementation status
 
-**Phase 1 package foundation is implemented.** Composer metadata, Laravel provider auto-discovery, four Artisan command **shells**, common flags, diagnostic serializers, and manually authored tests/mocks are present. **The AST indexer, source validation, scaffold generator, and impact resolver are not implemented yet.** Running the four shells returns nonzero exit code `2` with `not_implemented`; they do not write manifests or alter source files.
+**Phase 1 package foundation is implemented and CI-verified.** Composer metadata, Laravel provider auto-discovery, four Artisan command **shells**, common flags, diagnostic serializers, and manually authored tests/mocks are present. **The AST indexer, source validation, scaffold generator, and impact resolver are not implemented yet.** Running the four shells returns nonzero exit code `2` with `not_implemented`; they do not write manifests or alter source files.
 
 Architecture: [accepted ADR](AIDocumentation/ARCHITECTURE_DECISIONS.md) · [task checklist](AIDocumentation/TASKS.md) · [Phase 1 implementation details](AIDocumentation/PHASE_1_IMPLEMENTATION.md)
 
@@ -81,7 +81,7 @@ When scaffolding is implemented, its generated tests must **explicitly fail unti
 
 In a Laravel application: `php artisan test` (the documented execution interface).
 
-To develop MATMA itself, install Composer dependencies and run `composer test`. The repository additionally includes a minimal Laravel 11 consumer under `tests/fixtures/laravel-app/` which installs MATMA through a Composer path repository and runs real `php artisan test` tests. GitHub Actions exercises both the package's PHPUnit suites and this native Laravel smoke test.
+To develop MATMA itself, install Composer dependencies and run `composer test`. The repository additionally includes a minimal Laravel 11 consumer under `tests/fixtures/laravel-app/` which installs MATMA through a Composer path repository and runs real `php artisan test` tests. GitHub Actions exercises both the package's PHPUnit suites and this native Laravel smoke test. [CI run 42277378877](https://github.com/rzepeda/matma-php/actions/runs/42277378877) passed all six jobs: five compatibility-matrix jobs (24 tests and 98 assertions each) plus the Laravel 11 consumer's `php artisan test` (3 tests and 10 assertions).
 
 ## Planned phases
 

@@ -6,7 +6,7 @@ Source of truth: `matma_architecture_implementation_blueprint.md`; accepted PHP-
 
 - **Architectural decisions accepted and owner-verified:** The sole maintainer has explicitly accepted and verified the Phase 0 architecture decisions. No separate reviewer sign-off is required. This does **not** replace automated tests or Composer/CI compatibility checks.
 - **Phase 0 implementation tasks completed:** **0/5**. Final contracts, fixture verification, Composer constraints and CI are outstanding.
-- **Phase 1 implementation status:** all five task implementations have been authored in this phase; automated CI verification is pending, so checkboxes remain open until verified.
+- **Phase 1 implementation tasks completed and verified:** **5/5**. [CI run 42277378877](https://github.com/rzepeda/matma-php/actions/runs/42277378877) passed all six jobs (five PHP/Laravel package combinations plus the native Laravel app fixture).
 - **Work authored in Phase 1:** Composer package, Laravel provider, shared CLI options/output, explicit not-implemented command shells, manually mirrored tests and central mock, fixture app, and CI workflow. Shells are **not** working AST/scaffold/impact engines.
 - **Legend:** `[x]` means the task's full **Done when** condition is satisfied; `[ ]` means incomplete even when its architectural direction is accepted.
 
@@ -29,13 +29,13 @@ Source of truth: `matma_architecture_implementation_blueprint.md`; accepted PHP-
 
 ## Phase 1 — Composer/Laravel package foundation
 
-**Status: Phase 1 code and tests authored; awaiting CI verification.** Existing checklist boxes remain open until tests actually pass. See [Phase 1 implementation](PHASE_1_IMPLEMENTATION.md) and [Phase 1 execution handoff](PHASE_0_1_PLAN.md#phase-1--pending-implementation-tasks).
+**Status: 5/5 complete, CI verified on 2026-11-06.** All five tasks have been implemented and tested. See [Phase 1 implementation](PHASE_1_IMPLEMENTATION.md) and [Phase 0 / Phase 1 record](PHASE_0_1_PLAN.md#phase-1--implemented-and-ci-verified-tasks).
 
-- [ ] **P1-01** (Authored; CI pending) Create `composer.json`, PSR-4 autoload mappings, licensing, minimal source tree, and package metadata; depend on `nikic/php-parser` and `symfony/yaml`.
-- [ ] **P1-02** (Authored; CI pending) Register a Laravel service provider using package discovery and an optional explicit provider registration path for supported versions.
-- [ ] **P1-03** (Authored; CI pending) Create reusable CLI configuration/argument parsing for `--source-root/-s`, `--tests-root/-t`, `--scaffold/-S`, `--level/-l`, `--target/-f`, `--check/-c`, and `--format/-o`.
-- [ ] **P1-04** (Authored; CI pending) Add Artisan command shells: `matma:index`, `matma:scaffold`, `matma:impact`, and `matma:validate`; validate arguments and return consistent nonzero error codes.
-- [ ] **P1-05** (Authored; CI pending) Create a fixture Laravel project and automated tests for package discovery, Artisan registration, and CLI help/invalid options.
+- [x] **P1-01** Create `composer.json`, PSR-4 autoload mappings, licensing, minimal source tree, and package metadata; depend on `nikic/php-parser` and `symfony/yaml`.
+- [x] **P1-02** Register a Laravel service provider using package discovery and an optional explicit provider registration path for supported versions.
+- [x] **P1-03** Create reusable CLI configuration/argument parsing for `--source-root/-s`, `--tests-root/-t`, `--scaffold/-S`, `--level/-l`, `--target/-f`, `--check/-c`, and `--format/-o`.
+- [x] **P1-04** Add Artisan command shells: `matma:index`, `matma:scaffold`, `matma:impact`, and `matma:validate`; validate arguments and return consistent nonzero error codes.
+- [x] **P1-05** Create a fixture Laravel project and automated tests for package discovery, Artisan registration, and CLI help/invalid options.
 
 ## Phase 2 — Deterministic symbol discovery and validation
 
@@ -91,4 +91,4 @@ Source of truth: `matma_architecture_implementation_blueprint.md`; accepted PHP-
 
 ## Implementation order
 
-Implement P0 before P1, then P2 → P3 → P4 → P5 → P6. Use one coherent commit per completed feature/milestone when implementation begins; keep the docs updated as tasks are finished.
+Phase 1 is complete and CI-verified. The Phase 0 architectural decisions are accepted/owner-verified; detailed unresolved Phase 0 engineering contracts remain documented and are not all complete. Proceed to Phase 2 AST work, carrying forward those contracts. Preserve one coherent commit per future feature where practical and update checkboxes only after tests actually pass.

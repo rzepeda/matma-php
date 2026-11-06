@@ -1,6 +1,6 @@
 # MATMA PHP — Phase 1 Package Foundation
 
-**Implementation:** First Composer/Laravel package baseline.  
+**Implementation:** First Composer/Laravel package baseline — **complete and CI-verified**.  
 **Source of requirements:** `matma_architecture_implementation_blueprint.md`, [ADR-001](ARCHITECTURE_DECISIONS.md) and [TASKS.md](TASKS.md).
 
 ## Architecture delivered by source
@@ -47,7 +47,7 @@ Generated manifests will be excluded from Git using `/tests/mirror/**/*.auto.yam
 - `php artisan test` in a consuming Laravel app remains the agreed runner. The package itself uses PHPUnit/Testbench because it is not a standalone Laravel application.
 - No application source code is renamed or modified.
 - PHP 8.2 is MATMA's *minimum*; Laravel 13 requires a newer PHP version; CI selects valid combinations.
-- The CI matrix tests selected combinations, not every future version. Test execution results should be checked on GitHub Actions before treating the package as fully verified.
+- The CI matrix tests selected combinations, not every future version. **Verification passed** in [workflow run 42277378877](https://github.com/rzepeda/matma-php/actions/runs/42277378877): 5/5 package jobs passed (24 PHPUnit tests, 98 assertions per run), plus 1/1 Laravel 11 consumer smoke job (`php artisan test`: 3 tests, 10 assertions). Laravel 11 compatibility jobs disable Composer advisory **blocking only during CI dependency resolution** because legacy Laravel 11 versions have published security advisories; MATMA's distributed package does not disable Composer security checks.
 
 ## Next work
 
