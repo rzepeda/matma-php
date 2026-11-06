@@ -63,9 +63,9 @@ tests/mirror/Services/DocumentParser.auto.yaml
 - Use deterministic, **regenerable YAML manifests** as the persisted dependency index, located at `tests/mirror/**/*.auto.yaml`.
 - **Do not version generated YAML in Git**. Add a targeted ignore rule, leaving hand-written files trackable.
 - Indexing performs a deterministic **full rebuild initially**; use sorted output and safe atomic writes. Incremental indexing is not a first-release requirement.
-- An impact query consumes persisted manifests and **must not reparse production ASTs**.
+- An impact query consumes persisted manifests and **must not reparse production ASTs** (implementation deferred to Phase 5). **Phase 3 implemented** full AST index rebuild, stable YAML with a schema version/fingerprint, atomic per-file replacement, ownership-header collision protection, unchanged-file preservation, and selective stale cleanup of MATMA-owned manifests.
 - Missing or stale manifests must never silently produce apparently valid impact results.
-- **Open detailed contract:** whether `impact` errors on stale/missing manifests or triggers explicit regeneration, fingerprint strategy, and precise stale-file cleanup policy.
+- **Resolved for indexing:** YAML manifests remain unversioned in Git; generated files carry a schema version and project-wide input fingerprint. Only MATMA-owned stale manifests are deleted. **Open for Phase 5:** whether `impact` fails on missing/stale manifests or requires explicit reindexing; it must never silently read stale results.
 
 ### ADR-08 — Business and regression suites (D06)
 - Business/workflow and regression/E2E tests are **not source-file mirrored**.
@@ -79,17 +79,17 @@ tests/mirror/Services/DocumentParser.auto.yaml
 - **Impact discovery is separate from execution**: `matma:impact` reports deterministic affected tests, not automatic test runs. The host runs tests through `php artisan test`.
 - JSON is the preferred machine-readable output for agents; YAML remains the on-disk manifest format.
 
-## Implementation contracts still requiring specification
+## Remaining implementation contracts
 
 These are **not accepted choices yet**; do not mistake recommendations for decisions:
 
 1. **Manifest freshness behavior:** fail with an actionable diagnostic (recommended) versus automatically rebuilding when `impact` finds missing/stale data.
 2. **Framework-aware scaffolding:** auto-detect Pest/PHPUnit (recommended), default to PHPUnit, or use explicit configuration.
 3. **Non-mockable dependency handling:** detailed diagnostic format, failing test behavior, and supported fallback patterns (principle of no production rewrites is already accepted).
-4. **Generated-file ownership:** exact `.gitignore` rule, index metadata/fingerprint strategy, and safe cleanup of only MATMA-owned manifests.
+4. **Generated-file ownership:** implemented in Phase 3 (targeted ignore, schema+fingerprint, ownership header, safe stale cleanup). Future Phase 5 should use the fingerprint to report stale indexes.
 5. **Compatibility details:** Composer package identifier/type, extension requirements, supported version ranges for PHPUnit/Pest, and CI enforcement.
 6. **PHP symbol edge cases:** enum/trait treatment, multi-declaration files, anonymous-class identifiers, and stable cross-platform path rules.
-7. **CLI contracts:** error codes, machine-readable schemas, and how `--target` behaves during a full index rebuild.
+7. **CLI contracts:** Phase 3 uses full graph rebuild even with `--target`; the argument identifies the result target, never limits reverse-edge updates. Index error exit is 1; `--scaffold` is deferred with exit 2. Final Phase 4–5 result schemas and execution contracts remain open.
 
 ## Acceptance and traceability
 

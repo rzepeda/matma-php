@@ -25,7 +25,7 @@
 - **Partially resolved — DEC-07 / P0-05 — CLI contracts:** Phase 1 shells use exit 2 for not implemented and 64 for invalid MATMA options; structured output includes command/status/message/exit_code/options. Define final success/engine error codes and `--target` full-index behavior in later phases.
 - **Open — DEC-08 / P0-05 — Mock failure mode:** specify exact diagnostic and test behavior for unmockable final/readonly classes; do not alter production code.
 - **Open — DEC-09 / P0-05 — Manifest freshness:** decide explicit error on missing/stale manifests versus regeneration; keep impact queries free of runtime AST parsing.
-- **Partially resolved — DEC-10 / P0-05 — Generated-file ownership:** the `.gitignore` rule is implemented as `/tests/mirror/**/*.auto.yaml`; fingerprints, index metadata, atomic writes and safe selective deletion remain for the indexer phase.
+- **Partially resolved — DEC-10 / P0-05 — Generated-file ownership:** the `.gitignore` rule is `/tests/mirror/**/*.auto.yaml`; Phase 3 implements schema version, project fingerprint, atomic per-file writes, an ownership header, byte-stable regenerations and MATMA-owned stale cleanup. Phase 5 still needs stale-index detection.
 - **Partially resolved — DEC-11 / P0-05 — Acceptance fixtures:** Phase 1 covers common-flag validation, machine-readable outputs, package installation and CLI not-implemented errors; scaffold idempotence/no-clobber/failing-stub fixtures remain for Phase 4.
 
 **Important:** The architectural recommendations for DEC-06 and DEC-09 in ADR-001 are not yet accepted as final contracts. Do not silently mark them accepted or build behavior on them without recording the decision.

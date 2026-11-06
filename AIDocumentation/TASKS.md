@@ -8,7 +8,8 @@ Source of truth: `matma_architecture_implementation_blueprint.md`; accepted PHP-
 - **Phase 0 implementation tasks completed:** **0/5**. Final contracts, fixture verification, Composer constraints and CI are outstanding.
 - **Phase 1 implementation tasks completed and verified:** **5/5**. [CI run 42277378877](https://github.com/rzepeda/matma-php/actions/runs/42277378877) passed all six jobs.
 - **Phase 2 implementation tasks completed and verified:** **6/6**. [CI run 42285897847](https://github.com/rzepeda/matma-php/actions/runs/42285897847) passed all six jobs.
-- **Work authored in Phase 1:** Composer package, Laravel provider, shared CLI options/output, explicit not-implemented command shells, manually mirrored tests and central mock, fixture app, and CI workflow. Shells are **not** working AST/scaffold/impact engines.
+- **Phase 3 implementation tasks completed and verified:** **6/6**. [CI run 42291922018](https://github.com/rzepeda/matma-php/actions/runs/42291922018) passed all six jobs.
+- **Implemented today:** Composer/Laravel package, AST validation, graph indexing, generated YAML and manually mirrored unit/interaction/business tests. Only `scaffold` and `impact` remain unimplemented. Generated YAML is unversioned; no production code is changed.
 - **Legend:** `[x]` means the task's full **Done when** condition is satisfied; `[ ]` means incomplete even when its architectural direction is accepted.
 
 ## Phase 0 — Package contract and compatibility
@@ -51,12 +52,14 @@ Source of truth: `matma_architecture_implementation_blueprint.md`; accepted PHP-
 
 ## Phase 3 — AST dependency indexer
 
-- [ ] **P3-01** Define dependency edge rules (imports versus actual usages; type hints, constructors, static references, inheritance, attributes, and PHP-specific constructs) and explicit handling of unresolved/external classes.
-- [ ] **P3-02** Build directed class dependency graph from AST, with stable deduplicated edges and source-path pointers; distinguish internal from external dependencies.
-- [ ] **P3-03** Invert edges to direct dependents; compute shortest-path transitive reverse-dependency levels, safely handling cycles.
-- [ ] **P3-04** Serialize manifests with Symfony YAML at `tests/mirror/<sub_path>/<stem>.auto.yaml` including `class_name`, `source_file`, `mirrors`, `dependencies`, and `dependents.level_N`.
-- [ ] **P3-05** Implement `matma:index`, optional `--target` behavior, `--scaffold` interoperability, stable sorted outputs, atomic writes, and safe stale-manifest handling.
-- [ ] **P3-06** Add deterministic graph fixtures (chain, diamond, cycle, isolated node, external dependency); assert byte-stable regeneration and level grouping.
+**Status: 6/6 complete and CI-verified.** See [Phase 3 implementation](PHASE_3_IMPLEMENTATION.md). Indexing never generates test or mock files; `--scaffold` is explicitly deferred to Phase 4 with nonzero exit and no writes.
+
+- [x] **P3-01** Define dependency edge rules (imports versus actual usages; type hints, constructors, static references, inheritance, attributes, and PHP-specific constructs) and explicit handling of unresolved/external classes.
+- [x] **P3-02** Build directed class dependency graph from AST, with stable deduplicated edges and source-path pointers; distinguish internal from external dependencies.
+- [x] **P3-03** Invert edges to direct dependents; compute shortest-path transitive reverse-dependency levels, safely handling cycles.
+- [x] **P3-04** Serialize manifests with Symfony YAML at `tests/mirror/<sub_path>/<stem>.auto.yaml` including `class_name`, `source_file`, `mirrors`, `dependencies`, and `dependents.level_N`.
+- [x] **P3-05** Implement `matma:index`, optional `--target` behavior, `--scaffold` interoperability, stable sorted outputs, atomic writes, and safe stale-manifest handling.
+- [x] **P3-06** Add deterministic graph fixtures (chain, diamond, cycle, isolated node, external dependency); assert byte-stable regeneration and level grouping.
 
 ## Phase 4 — Mirrored test and mock scaffolding
 
@@ -94,4 +97,4 @@ Source of truth: `matma_architecture_implementation_blueprint.md`; accepted PHP-
 
 ## Implementation order
 
-Phases 1 and 2 are complete and CI-verified. Phase 0 architectural decisions are accepted/owner-verified; engineering contracts for Phase 3–5 remain tracked separately. Proceed to Phase 3 indexing: the Phase 2 AST reference inventory is not yet a persisted dependency graph. Preserve one coherent commit per future feature where practical and update checkboxes only after tests actually pass.
+Phases 1–3 are complete and CI-verified. Phase 0 decisions are owner-accepted/verified; future Phase 4–5 implementation contracts remain tracked. Proceed to Phase 4 non-destructive scaffolding and Phase 5 manifest-only impact queries. Keep test/mock scaffolds explicitly failing until authored and do not count Phase 3 index artifacts as completed test files.
