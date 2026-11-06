@@ -14,8 +14,11 @@ class MatmaServiceProviderTest extends TestCase
     {
         self::assertInstanceOf(MatmaServiceProvider::class, $this->app->getProvider(MatmaServiceProvider::class));
 
+        self::assertSame(0, Artisan::call('list', ['--raw' => true]));
+        $commands = Artisan::output();
+
         foreach (['matma:index', 'matma:scaffold', 'matma:impact', 'matma:validate'] as $name) {
-            self::assertTrue(Artisan::has($name), $name);
+            self::assertStringContainsString($name, $commands);
         }
     }
 }

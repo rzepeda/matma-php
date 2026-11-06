@@ -6,7 +6,7 @@
   "require": {
     "php": "^8.2",
     "laravel/framework": "^11.0",
-    "rzepeda/matma-php": "@dev"
+    "rzepeda/matma-php": "dev-main"
   },
   "require-dev": {
     "phpunit/phpunit": "^11.5.50"
@@ -16,7 +16,8 @@
       "type": "path",
       "url": "../../../",
       "options": {
-        "symlink": true
+        "symlink": true,
+        "versions": {"rzepeda/matma-php": "dev-main"}
       }
     }
   ],
