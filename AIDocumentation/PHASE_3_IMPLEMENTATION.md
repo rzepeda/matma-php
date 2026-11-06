@@ -1,6 +1,6 @@
 # MATMA PHP — Phase 3: AST Dependency Indexer
 
-**Status:** Implemented and CI-verified on 2026-11-06.
+**Status:** Phase 3 implemented and CI-verified on 2026-11-06. Phase 4 scaffolding was subsequently implemented; see [PHASE_4_IMPLEMENTATION.md](PHASE_4_IMPLEMENTATION.md).
 **Verification:** https://github.com/rzepeda/matma-php/actions/runs/42291922018
 **Tasks:** P3-01 through P3-06 in [TASKS.md](TASKS.md).
 

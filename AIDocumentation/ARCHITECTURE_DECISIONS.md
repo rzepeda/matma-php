@@ -57,7 +57,8 @@ tests/mirror/Services/DocumentParser.auto.yaml
 - Every generated test must **fail explicitly until implemented**, e.g. a PHPUnit `self::fail('Test not implemented')` assertion. Never generate a fake passing or skipped test as proof of coverage.
 - Keep mocks centralized under `tests/mocks/mirror/`, respecting existing dependency-injection seams.
 - When a dependency cannot be safely mocked (e.g. incompatible final/readonly classes), report the limitation and leave production untouched; do not create a misleading substitute.
-- **Open detailed contract:** automatic PHPUnit/Pest stub detection, namespace/autoload behavior, precise mock generation mechanics, and standardized command output/exit codes.
+- **Implemented in Phase 4:** PHPUnit-compatible class tests (also runnable via the Laravel runner used by Pest projects) use a guaranteed failing assertion; namespace resolution uses the project's Composer `autoload-dev.psr-4` where available. Centralized `Mock<Class>` factory classes wrap caller-supplied PHPUnit `createMock` closures, never clone real production behavior. `scaffold_incomplete` (exit 1) reports final/readonly/anonymous non-mockability. Existing test/mocks remain untouched.
+- **Not claimed:** native Pest DSL generation or a separate Pest CI compatibility matrix; those are optional future enhancements.
 
 ### ADR-07 — Index persistence and regeneration (D05, D09)
 - Use deterministic, **regenerable YAML manifests** as the persisted dependency index, located at `tests/mirror/**/*.auto.yaml`.

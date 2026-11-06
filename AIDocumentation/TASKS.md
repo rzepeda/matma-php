@@ -9,7 +9,8 @@ Source of truth: `matma_architecture_implementation_blueprint.md`; accepted PHP-
 - **Phase 1 implementation tasks completed and verified:** **5/5**. [CI run 42277378877](https://github.com/rzepeda/matma-php/actions/runs/42277378877) passed all six jobs.
 - **Phase 2 implementation tasks completed and verified:** **6/6**. [CI run 42285897847](https://github.com/rzepeda/matma-php/actions/runs/42285897847) passed all six jobs.
 - **Phase 3 implementation tasks completed and verified:** **6/6**. [CI run 42291922018](https://github.com/rzepeda/matma-php/actions/runs/42291922018) passed all six jobs.
-- **Implemented today:** Composer/Laravel package, AST validation, graph indexing, generated YAML and manually mirrored unit/interaction/business tests. Only `scaffold` and `impact` remain unimplemented. Generated YAML is unversioned; no production code is changed.
+- **Phase 4 implementation tasks completed and verified:** **5/5**. [CI run 42294621231](https://github.com/rzepeda/matma-php/actions/runs/42294621231) passed all six jobs, including the Laravel consumer check that generated test stubs fail under `php artisan test`.
+- **Implemented today:** Composer/Laravel package, AST validation, graph indexing, safe regenerable YAML, and non-destructive PHPUnit-compatible test/mock scaffolding. Only `impact` remains unimplemented. Generated YAML is ignored by Git; no production code is changed.
 - **Legend:** `[x]` means the task's full **Done when** condition is satisfied; `[ ]` means incomplete even when its architectural direction is accepted.
 
 ## Phase 0 — Package contract and compatibility
@@ -63,11 +64,13 @@ Source of truth: `matma_architecture_implementation_blueprint.md`; accepted PHP-
 
 ## Phase 4 — Mirrored test and mock scaffolding
 
-- [ ] **P4-01** Implement `matma:scaffold` for every indexed target to create missing unit tests under `tests/unit/mirror/`.
-- [ ] **P4-02** Generate missing interaction tests under `tests/interaction/mirror/` and centralized mock classes under `tests/mocks/mirror/`.
-- [ ] **P4-03** Ensure manifests are generated/refreshed with the mirrors; create missing folders recursively without writing into production source.
-- [ ] **P4-04** Use runnable PHPUnit-compatible (or explicitly supported Pest-compatible) stubs with autoload and namespace conventions; avoid falsely passing placeholder assertions.
-- [ ] **P4-05** Make scaffolding idempotent, non-destructive, and safe on partially existing mirror trees; test repeated runs and conflicts.
+**Status: 5/5 complete and CI-verified.** See [Phase 4 implementation](PHASE_4_IMPLEMENTATION.md). New test stubs fail deliberately; non-mockable final/readonly/anonymous classes return explicit diagnostics rather than fabricated mocks.
+
+- [x] **P4-01** Implement `matma:scaffold` for every indexed target to create missing unit tests under `tests/unit/mirror/`.
+- [x] **P4-02** Generate missing interaction tests under `tests/interaction/mirror/` and centralized mock classes under `tests/mocks/mirror/`.
+- [x] **P4-03** Ensure manifests are generated/refreshed with the mirrors; create missing folders recursively without writing into production source.
+- [x] **P4-04** Use runnable PHPUnit-compatible (or explicitly supported Pest-compatible) stubs with autoload and namespace conventions; avoid falsely passing placeholder assertions.
+- [x] **P4-05** Make scaffolding idempotent, non-destructive, and safe on partially existing mirror trees; test repeated runs and conflicts.
 
 ## Phase 5 — Impact queries and verification tier selection
 
@@ -97,4 +100,4 @@ Source of truth: `matma_architecture_implementation_blueprint.md`; accepted PHP-
 
 ## Implementation order
 
-Phases 1–3 are complete and CI-verified. Phase 0 decisions are owner-accepted/verified; future Phase 4–5 implementation contracts remain tracked. Proceed to Phase 4 non-destructive scaffolding and Phase 5 manifest-only impact queries. Keep test/mock scaffolds explicitly failing until authored and do not count Phase 3 index artifacts as completed test files.
+Phases 1–4 are complete and CI-verified. Phase 0 decisions are owner-accepted/verified; any remaining technical contracts and Phase 5 impact-query requirements are tracked separately. Proceed to Phase 5 manifest-only impact and tier selection. Never treat a generated failing stub as completed test coverage.
