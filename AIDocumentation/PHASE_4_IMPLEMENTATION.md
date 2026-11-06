@@ -86,4 +86,4 @@ The Phase 4 unit tier contains `tests/unit/mirror/Scaffolding/ScaffoldGeneratorT
 
 ## Deferred work
 
-Phase 5 still needs `matma:impact` as a persisted-manifest-only query, inclusive reverse-dependency levels, reliable missing/stale manifest diagnostics, and explicit business/regression workflow registration. Phase 4 does not execute generated tests automatically or assume that a generated failing stub counts as test coverage.
+Phase 5 subsequently implemented `matma:impact`, inclusive reverse-dependency selections, missing/stale manifest checks, and explicitly registered business/regression suggestions; see [PHASE_5_IMPLEMENTATION.md](PHASE_5_IMPLEMENTATION.md). Phase 4 still does not execute generated tests automatically or assume that a generated failing stub counts as coverage.

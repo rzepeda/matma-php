@@ -64,33 +64,33 @@ tests/mirror/Services/DocumentParser.auto.yaml
 - Use deterministic, **regenerable YAML manifests** as the persisted dependency index, located at `tests/mirror/**/*.auto.yaml`.
 - **Do not version generated YAML in Git**. Add a targeted ignore rule, leaving hand-written files trackable.
 - Indexing performs a deterministic **full rebuild initially**; use sorted output and safe atomic writes. Incremental indexing is not a first-release requirement.
-- An impact query consumes persisted manifests and **must not reparse production ASTs** (implementation deferred to Phase 5). **Phase 3 implemented** full AST index rebuild, stable YAML with a schema version/fingerprint, atomic per-file replacement, ownership-header collision protection, unchanged-file preservation, and selective stale cleanup of MATMA-owned manifests.
+- `matma:impact` **now reads persisted YAML without reparsing PHP ASTs**. Phase 3 implemented full AST index rebuild, schema/fingerprint and safe ownership-aware regeneration. Phase 5 added a generated `.index.auto.yaml` freshness inventory and exact file/FQCN manifest lookup; no source-tree glob/search is performed at selection time.
 - Missing or stale manifests must never silently produce apparently valid impact results.
-- **Resolved for indexing:** YAML manifests remain unversioned in Git; generated files carry a schema version and project-wide input fingerprint. Only MATMA-owned stale manifests are deleted. **Open for Phase 5:** whether `impact` fails on missing/stale manifests or requires explicit reindexing; it must never silently read stale results.
+- **Resolved for indexing:** YAML manifests remain unversioned in Git; generated files carry a schema version and project-wide input fingerprint. Only MATMA-owned stale manifests are deleted. **Resolved in Phase 5:** missing or stale manifests cause an actionable nonzero error instructing explicit `php artisan matma:index` regeneration, never automatic AST reparsing or silent selection. Known file contents are rehashed, and known directories are watched for changes.
 
 ### ADR-08 — Business and regression suites (D06)
 - Business/workflow and regression/E2E tests are **not source-file mirrored**.
 - Associate them with affected components through **explicit registration/metadata**, not filename inference.
 - Preserve tier isolation; do not automatically execute all business or regression tests merely because an impact level increases.
-- The command's selection output must distinguish mirrored test impact from explicitly registered workflows.
+- Phase 5 implements a user-owned `tests/matma-verification.yaml` registry, keyed by explicit source paths/FQCNs and workflow test paths. Impact reports matching `business` and `regression` entries separately; it never adds them to mirrored test lists or executes them.
 
 ### ADR-09 — CLI and agent integration (D08, D09)
 - Retain blueprint commands: `matma:index`, `matma:scaffold`, `matma:impact`, `matma:validate`.
 - Preserve blueprint flags: `--source-root/-s`, `--tests-root/-t`, `--scaffold/-S`, `--level/-l`, `--target/-f`, `--check/-c`, `--format/-o` (text/json/yaml).
-- **Impact discovery is separate from execution**: `matma:impact` reports deterministic affected tests, not automatic test runs. The host runs tests through `php artisan test`.
+- **Implemented:** `matma:impact` reports deterministic affected source files, unit/interaction tests, missing test paths, and registered workflows; it never executes tests. Only the host runs tests through `php artisan test`.
 - JSON is the preferred machine-readable output for agents; YAML remains the on-disk manifest format.
 
 ## Remaining implementation contracts
 
 These are **not accepted choices yet**; do not mistake recommendations for decisions:
 
-1. **Manifest freshness behavior:** fail with an actionable diagnostic (recommended) versus automatically rebuilding when `impact` finds missing/stale data.
+1. **Manifest freshness behavior:** **resolved by Phase 5**: fail with actionable diagnostics rather than automatically reindexing; conservative SHA-256 checks of known files plus indexed directory modification times. The command itself performs no AST parsing.
 2. **Framework-aware scaffolding:** auto-detect Pest/PHPUnit (recommended), default to PHPUnit, or use explicit configuration.
 3. **Non-mockable dependency handling:** detailed diagnostic format, failing test behavior, and supported fallback patterns (principle of no production rewrites is already accepted).
-4. **Generated-file ownership:** implemented in Phase 3 (targeted ignore, schema+fingerprint, ownership header, safe stale cleanup). Future Phase 5 should use the fingerprint to report stale indexes.
+4. **Generated-file ownership:** completed for index and impact (targeted ignore, schema+fingerprint, ownership header, safe stale cleanup, and a generated inventory used to reject stale data).
 5. **Compatibility details:** Composer package identifier/type, extension requirements, supported version ranges for PHPUnit/Pest, and CI enforcement.
 6. **PHP symbol edge cases:** enum/trait treatment, multi-declaration files, anonymous-class identifiers, and stable cross-platform path rules.
-7. **CLI contracts:** Phase 3 uses full graph rebuild even with `--target`; the argument identifies the result target, never limits reverse-edge updates. Index error exit is 1; `--scaffold` is deferred with exit 2. Final Phase 4–5 result schemas and execution contracts remain open.
+7. **CLI contracts:** complete for all four current commands. Impact requires `--target`, uses inclusive `--level`, reports selected/missing tests and registered workflows, exits 1 on missing/stale/unsafe data, and rejects `--scaffold` as an invalid read-only operation.
 
 ## Acceptance and traceability
 
