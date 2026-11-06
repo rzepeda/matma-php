@@ -66,8 +66,9 @@ class ValidateCommandRealEngineTest extends TestCase
         ]);
 
         self::assertSame(1, $exit);
-        self::assertStringContainsString('[parse_error]', Artisan::output());
-        self::assertStringContainsString('Broken.php:', Artisan::output());
+        $output = Artisan::output();
+        self::assertStringContainsString('[parse_error]', $output);
+        self::assertStringContainsString('Broken.php:', $output);
     }
 
     public function test_unknown_class_target_fails_even_without_check(): void
