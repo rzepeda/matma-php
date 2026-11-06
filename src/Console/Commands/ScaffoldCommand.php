@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Matma\Php\Console\Commands;
 
-use Matma\Php\Console\MatmaCommand;
-
-class ScaffoldCommand extends MatmaCommand
+class ScaffoldCommand extends IndexCommand
 {
     protected const MATMA_NAME = 'matma:scaffold';
-    protected const MATMA_DESCRIPTION = 'Create mirrored tests and mocks (Phase 4, not implemented).';
+    protected const MATMA_DESCRIPTION = 'Generate missing mirrored tests, centralized mocks and refreshed YAML manifests.';
+
+    public function handle(): int
+    {
+        return $this->executeIndex(true);
+    }
 }

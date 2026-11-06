@@ -109,18 +109,29 @@ class IndexCommandInteractionTest extends TestCase
         self::assertDirectoryDoesNotExist($this->outputRoot.'/mirror');
     }
 
-    public function test_scaffold_flag_is_explicitly_deferred_without_writes(): void
+    public function test_index_scaffold_flag_generates_only_selected_failing_tests_and_mocks(): void
     {
         $code = Artisan::call('matma:index', [
             '--source-root' => $this->fixture(),
             '--tests-root' => $this->outputRoot,
+            '--target' => 'App\Base',
             '--scaffold' => true,
             '--format' => 'yaml',
         ]);
 
-        self::assertSame(2, $code);
+        self::assertSame(0, $code);
         $payload = Yaml::parse(Artisan::output());
-        self::assertSame('not_implemented', $payload['status']);
-        self::assertDirectoryDoesNotExist($this->outputRoot.'/mirror');
+        self::assertSame('scaffolded', $payload['status']);
+        self::assertCount(15, $payload['manifests']['written']);
+        self::assertCount(3, $payload['scaffolds']['created']);
+        self::assertFileExists($this->outputRoot.'/mirror/Base.auto.yaml');
+        self::assertFileExists($this->outputRoot.'/unit/mirror/BaseTest.php');
+        self::assertFileExists($this->outputRoot.'/interaction/mirror/BaseInteractionTest.php');
+        self::assertFileExists($this->outputRoot.'/mocks/mirror/MockBase.php');
+        self::assertFileDoesNotExist($this->outputRoot.'/unit/mirror/TopTest.php');
+        self::assertStringContainsString(
+            "self::fail(",
+            (string) file_get_contents($this->outputRoot.'/unit/mirror/BaseTest.php'),
+        );
     }
 }

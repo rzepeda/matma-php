@@ -74,6 +74,8 @@ final class DiscoveryVisitor extends NodeVisitorAbstract
                 'class_name' => $className,
                 'start_line' => $node->getStartLine(),
                 'symbol_id' => $symbolId,
+                'is_final' => $node instanceof Stmt\Class_ && $node->isFinal(),
+                'is_readonly' => $node instanceof Stmt\Class_ && $node->isReadonly(),
             ];
         }
 

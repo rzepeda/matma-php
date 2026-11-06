@@ -9,7 +9,7 @@ use Matma\Php\Tests\TestCase;
 
 class MatmaServiceProviderInteractionTest extends TestCase
 {
-    public function test_commands_are_registered_and_only_future_engines_report_unimplemented(): void
+    public function test_commands_are_registered_and_impact_alone_reports_unimplemented(): void
     {
         self::assertSame(0, Artisan::call('list', ['--raw' => true]));
         $available = Artisan::output();
@@ -18,7 +18,7 @@ class MatmaServiceProviderInteractionTest extends TestCase
             self::assertStringContainsString($name, $available);
         }
 
-        foreach (['matma:scaffold', 'matma:impact'] as $name) {
+        foreach (['matma:impact'] as $name) {
             self::assertSame(2, Artisan::call($name));
             self::assertStringContainsString('[not_implemented]', Artisan::output());
         }

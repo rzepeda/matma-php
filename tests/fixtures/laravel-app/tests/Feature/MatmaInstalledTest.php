@@ -60,6 +60,48 @@ class MatmaInstalledTest extends TestCase
         }
     }
 
+    public function test_scaffold_installs_failing_test_templates_and_php_artisan_test_can_run_them(): void
+    {
+        $temporaryRoot = sys_get_temp_dir().'/matma-scaffold-consumer-'.bin2hex(random_bytes(8));
+        self::assertTrue(mkdir($temporaryRoot, 0775, true));
+
+        try {
+            $result = $this->artisanProcess(
+                'matma:scaffold',
+                '--format=json',
+                '--target=App\Services\SmokeService',
+                '--tests-root='.$temporaryRoot,
+            );
+
+            self::assertSame(0, $result->getExitCode(), $result->getOutput().$result->getErrorOutput());
+            $payload = json_decode($result->getOutput(), true, flags: JSON_THROW_ON_ERROR);
+            self::assertSame('scaffolded', $payload['status']);
+            self::assertCount(3, $payload['scaffolds']['created']);
+
+            $test = $temporaryRoot.'/unit/mirror/Services/SmokeServiceTest.php';
+            self::assertFileExists($test);
+            self::assertFileExists($temporaryRoot.'/interaction/mirror/Services/SmokeServiceInteractionTest.php');
+            self::assertFileExists($temporaryRoot.'/mocks/mirror/Services/MockSmokeService.php');
+            self::assertFileExists($temporaryRoot.'/mirror/Services/SmokeService.auto.yaml');
+
+            $run = $this->artisanProcess('test', $test);
+            self::assertNotSame(0, $run->getExitCode());
+            self::assertStringContainsString(
+                'MATMA: implement unit assertions',
+                $run->getOutput().$run->getErrorOutput(),
+            );
+        } finally {
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($temporaryRoot, \FilesystemIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::CHILD_FIRST,
+            );
+            foreach ($iterator as $item) {
+                $item->isDir() && ! $item->isLink() ? rmdir($item->getPathname()) : unlink($item->getPathname());
+            }
+            rmdir($temporaryRoot);
+        }
+    }
+
     public function test_bad_options_fail_with_an_actionable_status(): void
     {
         $result = $this->artisanProcess('matma:validate', '--level=-1', '--format=json');

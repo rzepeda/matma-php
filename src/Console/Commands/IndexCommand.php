@@ -5,20 +5,30 @@ declare(strict_types=1);
 namespace Matma\Php\Console\Commands;
 
 use InvalidArgumentException;
-use RuntimeException;
 use Matma\Php\Analysis\ProjectInspector;
 use Matma\Php\Analysis\SourceInventory;
 use Matma\Php\Console\MatmaCommand;
 use Matma\Php\Console\MatmaOptions;
 use Matma\Php\Indexing\DependencyGraph;
 use Matma\Php\Indexing\ManifestWriter;
+use Matma\Php\Scaffolding\ScaffoldGenerator;
+use RuntimeException;
 
 class IndexCommand extends MatmaCommand
 {
     protected const MATMA_NAME = 'matma:index';
-    protected const MATMA_DESCRIPTION = 'Build deterministic YAML reverse-dependency manifests from PHP ASTs.';
+    protected const MATMA_DESCRIPTION = 'Build deterministic YAML dependency manifests, optionally scaffold missing tests.';
 
     public function handle(): int
+    {
+        return $this->executeIndex((bool) $this->option('scaffold'));
+    }
+
+    /**
+     * Shared implementation for matma:index --scaffold and matma:scaffold.
+     * Validation and graph construction happen before any file creation.
+     */
+    protected function executeIndex(bool $scaffold): int
     {
         try {
             $options = MatmaOptions::fromArray($this->options());
@@ -26,20 +36,12 @@ class IndexCommand extends MatmaCommand
             return $this->report('invalid_options', $exception->getMessage(), self::EXIT_INVALID_OPTIONS, null);
         }
 
-        if ($options->scaffold) {
-            return $this->report(
-                'not_implemented',
-                'Indexing with --scaffold requires the Phase 4 generator; no manifests were written.',
-                self::EXIT_NOT_IMPLEMENTED,
-                $options,
-            );
-        }
-
         try {
             $inspection = (new ProjectInspector(base_path()))->inspect(
                 $options->sourceRoot,
                 $options->testsRoot,
             );
+
             if ($inspection['summary']['errors'] > 0) {
                 return $this->report(
                     'validation_failed',
@@ -63,35 +65,52 @@ class IndexCommand extends MatmaCommand
                     $lookup = SourceInventory::projectRelative(base_path(), $normalized);
                 }
             }
-            // Preserve namespace backslashes for FQCN targets. Convert
-            // filesystem paths only when the input is an absolute project path.
+
             $target = $lookup === null ? null : $builder->resolveTarget($graph, $lookup);
-            $written = (new ManifestWriter(base_path(), $options->testsRoot))->write($graph['manifests']);
+
+            $result = $scaffold
+                ? (new ScaffoldGenerator(base_path(), $options->sourceRoot, $options->testsRoot))
+                    ->run($graph, $target)
+                : [
+                    'manifests' => (new ManifestWriter(base_path(), $options->testsRoot))->write($graph['manifests']),
+                    'scaffolds' => ['created' => [], 'existing' => []],
+                    'diagnostics' => [],
+                    'targets' => [],
+                ];
+
+            $incomplete = $result['diagnostics'] !== [];
+            $manifestCounts = $result['manifests'];
+            $testCounts = $result['scaffolds'];
 
             return $this->report(
-                'indexed',
+                ! $scaffold ? 'indexed' : ($incomplete ? 'scaffold_incomplete' : 'scaffolded'),
                 sprintf(
-                    'Indexed %d files, %d internal edges, %d external references; %d written, %d unchanged, %d stale removed.',
+                    'Indexed %d files, %d edges; manifests: %d written, %d unchanged, %d removed; scaffolds: %d created, %d existing; %d mock warnings.',
                     $graph['summary']['indexed_files'],
                     $graph['summary']['internal_edges'],
-                    $graph['summary']['external_references'],
-                    count($written['written']),
-                    count($written['unchanged']),
-                    count($written['removed']),
+                    count($manifestCounts['written']),
+                    count($manifestCounts['unchanged']),
+                    count($manifestCounts['removed']),
+                    count($testCounts['created']),
+                    count($testCounts['existing']),
+                    count($result['diagnostics']),
                 ),
-                0,
+                $incomplete ? 1 : 0,
                 $options,
                 [
                     'summary' => $graph['summary'],
                     'index_fingerprint' => $graph['fingerprint'],
                     'target' => $target,
-                    'manifests' => $written,
+                    'manifests' => $manifestCounts,
+                    'scaffolds' => $testCounts,
+                    'diagnostics' => $result['diagnostics'],
+                    'scaffold_targets' => $result['targets'],
                 ],
             );
         } catch (InvalidArgumentException $exception) {
             return $this->report('invalid_target_or_path', $exception->getMessage(), 1, $options);
         } catch (RuntimeException $exception) {
-            return $this->report('index_error', $exception->getMessage(), 1, $options);
+            return $this->report('generation_error', $exception->getMessage(), 1, $options);
         }
     }
 }
