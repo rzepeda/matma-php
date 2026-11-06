@@ -1,16 +1,35 @@
 # MATMA PHP — Implementation Tasks
 
-Source of truth: `matma_architecture_implementation_blueprint.md` (accepted MATMA ADR). This backlog distinguishes **required blueprint behavior** from **PHP-specific design choices** that need resolution.
+Source of truth: `matma_architecture_implementation_blueprint.md`; accepted PHP-specific decisions: [ADR-001](ARCHITECTURE_DECISIONS.md). Detailed unresolved decisions and Phase 1 handoff: [PHASE_0_1_PLAN.md](PHASE_0_1_PLAN.md).
+
+## Status (2026-11-06)
+
+- **Architectural direction agreed:** P0-01 through P0-05 all have accepted *partial* decisions, as recorded below. This does **not** mean their original acceptance criteria have passed.
+- **Phase 0 implementation tasks completed:** **0/5**. Final contracts, fixture verification, Composer constraints and CI are outstanding.
+- **Phase 1 implementation tasks completed:** **0/5**. Package foundation has not started.
+- **Work done so far:** Documentation and architectural decisions only. Do not interpret this checklist as tested or installed functionality.
+- **Legend:** `[x]` means the task's full **Done when** condition is satisfied; `[ ]` means incomplete even when its architectural direction is accepted.
 
 ## Phase 0 — Package contract and compatibility
 
-- [ ] **P0-01** Define supported PHP and Laravel versions, Composer package name/type, extension requirements, and PHPUnit/Pest compatibility matrix. **Done when:** compatibility is documented and enforced in Composer/CI.
-- [ ] **P0-02** Resolve blueprint snake_case filename convention vs Laravel's PSR-4 PascalCase files; choose an explicit strict/compatibility policy and deterministic mapping. **Done when:** examples and tests cover both allowed and disallowed names.
-- [ ] **P0-03** Define source symbol scope: classes, abstract classes, enums, interfaces, traits, anonymous classes, and multi-declaration files. **Done when:** each construct has a documented audit/indexing rule.
-- [ ] **P0-04** Define deterministic file/path normalization, Composer namespace resolution, case sensitivity, symlinks, excluded directories, and file traversal order. **Done when:** mappings behave identically across supported platforms.
-- [ ] **P0-05** Decide test stub strategy and command policy (generate only missing files; never overwrite user edits); define JSON/YAML output schema and exit codes. **Done when:** fixtures assert contract and idempotence.
+- [ ] **P0-01** Define supported PHP and Laravel versions, Composer package name/type, extension requirements, and PHPUnit/Pest compatibility matrix. **Accepted:** PHP **8.2+**, Laravel **11 onward**, Composer dev dependency, Laravel package discovery, `php artisan test`, preserve host PHPUnit/Pest choice; `nikic/php-parser` + `symfony/yaml`. **Pending:** Composer identity/type, extension list, framework/test-library version constraints, CI compatibility matrix. **Done when:** compatibility is documented and enforced in Composer/CI.
+- [ ] **P0-02** Resolve blueprint snake_case filename convention vs Laravel's PSR-4 PascalCase files; choose an explicit strict/compatibility policy and deterministic mapping. **Accepted:** preserve native Laravel/PSR-4 names and project paths, mirror source-relative structure in `tests/`, never rename source code; anonymous classes inherit their containing source file identity for test selection. **Pending:** precise mirrored test/mock class filenames and namespaces, allowed/disallowed mapping fixtures. **Done when:** examples and tests cover both allowed and disallowed names.
+- [ ] **P0-03** Define source symbol scope: classes, abstract classes, enums, interfaces, traits, anonymous classes, and multi-declaration files. **Accepted:** named classes, abstract classes, interfaces and anonymous classes are testable targets; anonymous classes have no standalone PSR-4 test identity. **Pending:** treatment of traits/enums as dependencies or targets; multi-declaration validation and stable anonymous-node identifiers. **Done when:** each construct has a documented audit/indexing rule.
+- [ ] **P0-04** Define deterministic file/path normalization, Composer namespace resolution, case sensitivity, symlinks, excluded directories, and file traversal order. **Accepted:** preserve source-relative path and directory casing beneath `tests/`, resolve without runtime filesystem searches at impact-query time. **Pending:** cross-platform normalization, PSR-4 autoload map precedence, case mismatch behavior, symlink policy, exclusions, deterministic traversal and fixtures. **Done when:** mappings behave identically across supported platforms.
+- [ ] **P0-05** Decide test stub strategy and command policy (generate only missing files; never overwrite user edits); define JSON/YAML output schema and exit codes. **Accepted:** only missing files are generated; never overwrite edits or production code; generated tests fail explicitly; centralized mocks; non-mockable dependencies receive diagnostics; `php artisan test` executes tests; `impact` only selects; JSON CLI output and YAML on-disk manifests. **Pending:** PHPUnit/Pest generator selection, exact CLI JSON/YAML schemas and exit codes, stale-index behavior, fixture tests for safety/idempotence. **Done when:** fixtures assert contract and idempotence.
+
+### Agreed cross-cutting behavior (not new completed tasks)
+
+- Index real AST references rather than unused imports; materialize reverse dependencies.
+- `--level` is an inclusive shortest-path reverse-dependency radius, with levels 0, 1, and 2+ as in ADR-001.
+- Use deterministic full index rebuilds initially; generated `tests/mirror/**/*.auto.yaml` files are **not Git-versioned**.
+- Business and regression suites are explicitly registered and are not automatically mirrored or always executed.
+- `matma:impact` never silently runs tests or reparses source ASTs.
+- The outstanding choices are tracked individually in [PHASE_0_1_PLAN.md](PHASE_0_1_PLAN.md).
 
 ## Phase 1 — Composer/Laravel package foundation
+
+**Status: all five tasks pending.** Begin after required Phase 0 interface contracts are settled; see [Phase 1 execution handoff](PHASE_0_1_PLAN.md#phase-1--pending-implementation-tasks).
 
 - [ ] **P1-01** Create `composer.json`, PSR-4 autoload mappings, licensing, minimal source tree, and package metadata; depend on `nikic/php-parser` and `symfony/yaml`.
 - [ ] **P1-02** Register a Laravel service provider using package discovery and an optional explicit provider registration path for supported versions.
