@@ -66,7 +66,7 @@ class ManifestLocatorTest extends TestCase
             self::fail('Unmapped FQCN was accepted.');
         } catch (ImpactException $exception) {
             self::assertSame('invalid_target', $exception->status);
-            self::assertStringContainsString('source-file.php', $exception->getMessage());
+            self::assertStringContainsString('relative-file.php', $exception->getMessage());
         }
     }
 }

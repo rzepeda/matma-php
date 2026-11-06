@@ -79,8 +79,8 @@ final class ManifestReader
     private function checkFreshness(array $index, string $configuredSourceRoot): void
     {
         $actual = realpath($configuredSourceRoot);
-        if ($actual === false
-            || SourceInventory::normalize($actual) !== ($index['source_root'] ?? null)) {
+        $canonical = $actual === false ? null : SourceInventory::normalize($actual);
+        if ($canonical === null || $canonical !== ($index['source_root'] ?? null)) {
             throw new ImpactException('stale_index', 'Source root changed or disappeared. Run php artisan matma:index.');
         }
 
@@ -107,7 +107,7 @@ final class ManifestReader
             $path = SourceInventory::normalize(
                 SourceInventory::absolutePath($this->projectRoot, $input[0]),
             );
-            if (! str_starts_with($path, rtrim($configuredSourceRoot, '/').'/')) {
+            if (! str_starts_with($path, rtrim($canonical, '/').'/')) {
                 throw new ImpactException('invalid_manifest', 'Indexed source path escapes the configured root.');
             }
             if (! is_file($path) || is_link($path) || hash_file('sha256', $path) !== $input[1]) {
@@ -124,8 +124,8 @@ final class ManifestReader
                 throw new ImpactException('invalid_manifest', 'Malformed directory freshness metadata. Reindex.');
             }
             $path = $entry['path'];
-            if ($path !== $configuredSourceRoot
-                && ! str_starts_with($path, rtrim($configuredSourceRoot, '/').'/')) {
+            if ($path !== $canonical
+                && ! str_starts_with($path, rtrim($canonical, '/').'/')) {
                 throw new ImpactException('invalid_manifest', 'Directory freshness path escapes source root.');
             }
             clearstatcache(true, $path);

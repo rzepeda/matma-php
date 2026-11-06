@@ -142,14 +142,14 @@ class ImpactCommandInteractionTest extends TestCase
             'business' => [
                 [
                     'id' => 'business-smoke',
-                    'sources' => ['tests/fixtures/graph-project/app/Top.php'],
+                    'sources' => [$this->sourceRoot().'/Top.php'],
                     'tests' => [$this->outputRoot.'/business/BusinessSmokeTest.php'],
                 ],
             ],
             'regression' => [
                 [
                     'id' => 'manual-regression',
-                    'sources' => ['tests/fixtures/graph-project/app/Base.php'],
+                    'sources' => [$this->sourceRoot().'/Base.php'],
                     'tests' => [$this->outputRoot.'/regression/ManualRegressionTest.php'],
                 ],
             ],

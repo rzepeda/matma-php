@@ -46,15 +46,13 @@ class MatmaInstalledTest extends TestCase
             self::assertSame('App\Services\SmokeService', $parsed['class_name']);
             self::assertSame('app/Services/SmokeService.php', $parsed['source_file']);
         } finally {
-            $folder = $temporaryRoot.'/mirror/Services';
-            if (is_file($folder.'/SmokeService.auto.yaml')) {
-                unlink($folder.'/SmokeService.auto.yaml');
-            }
-            if (is_dir($folder)) {
-                rmdir($folder);
-            }
-            if (is_dir($temporaryRoot.'/mirror')) {
-                rmdir($temporaryRoot.'/mirror');
+            $entries = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($temporaryRoot, \FilesystemIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::CHILD_FIRST,
+            );
+            foreach ($entries as $entry) {
+                $entry->isDir() && ! $entry->isLink()
+                    ? rmdir($entry->getPathname()) : unlink($entry->getPathname());
             }
             rmdir($temporaryRoot);
         }
