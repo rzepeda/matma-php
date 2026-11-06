@@ -1,0 +1,13 @@
+/vendor/
+/.phpunit.cache/
+/.phpunit.result.cache
+/.phpunit-watcher.yml
+/.idea/
+/.vscode/
+/composer.lock
+/tests/fixtures/laravel-app/vendor/
+/tests/fixtures/laravel-app/composer.lock
+/tests/fixtures/laravel-app/bootstrap/cache/*.php
+/tests/fixtures/laravel-app/.phpunit.cache/
+/tests/fixtures/laravel-app/.env
+/tests/mirror/**/*.auto.yaml

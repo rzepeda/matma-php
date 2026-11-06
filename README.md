@@ -1,78 +1,88 @@
 # MATMA PHP — Multi-Tiered Agentic Testing & Mock Architecture
 
-> **Status: specification and implementation planning.** This repository does not yet contain a working Composer package, Artisan commands, or an AST indexer. The files under [AIDocumentation](AIDocumentation/) define the work required to implement them.
+MATMA is an agent-oriented testing architecture for PHP/Laravel. It preserves the host project's PSR-4 conventions and places mirrored tests and centralized mocks under the project's `tests/` directory, with dependency manifests generated on demand rather than committed.
 
-MATMA is a testing and mock architecture for PHP/Laravel projects designed for deterministic class discovery, small agent context windows, fast impact analysis, and precisely scoped automated verification.
+## Implementation status
 
-## Core principles
+**Phase 1 package foundation is implemented.** Composer metadata, Laravel provider auto-discovery, four Artisan command **shells**, common flags, diagnostic serializers, and manually authored tests/mocks are present. **The AST indexer, source validation, scaffold generator, and impact resolver are not implemented yet.** Running the four shells returns nonzero exit code `2` with `not_implemented`; they do not write manifests or alter source files.
 
-1. **One primary class per source file.** Enforce deterministic class-to-filename mapping.
-2. **Mirrored paths.** Production classes map directly to unit tests, interaction tests, centralized mocks, and generated dependency manifests.
-3. **Precomputed reverse dependencies.** An offline AST indexer writes `.auto.yaml` files; impact queries read those files instead of reparsing a project.
-4. **Explicit testing tiers.** Isolated unit tests, pairwise interaction tests, process/business tests, and live-data/service regression tests remain distinct.
-5. **Unobtrusive installation.** Distribute tooling as a Composer package under `vendor/`, avoiding application-specific tooling clutter.
+Architecture: [accepted ADR](AIDocumentation/ARCHITECTURE_DECISIONS.md) · [task checklist](AIDocumentation/TASKS.md) · [Phase 1 implementation details](AIDocumentation/PHASE_1_IMPLEMENTATION.md)
 
-## PHP/Laravel implementation
+## Compatibility
 
-- **AST:** `nikic/php-parser`, including `Stmt\\Class_` and `Stmt\\Use_` analysis.
-- **YAML:** `symfony/yaml`.
-- **Integration:** a Laravel service provider and Artisan commands, beginning with `php artisan matma:index`.
-- **Source root:** `app/` by default; configurable with `--source-root`.
-- **Test root:** `tests/` by default; configurable with `--tests-root`.
+- PHP **8.2+**.
+- Laravel **11 onward**, with per-version CI matrices (the Laravel version's own minimum PHP requirement still applies).
+- Composer development dependency with Laravel package discovery. No production file changes.
+- PHPUnit **or** Pest projects can continue to use Laravel's native `php artisan test`. MATMA's *package* test suite currently uses PHPUnit and Orchestra Testbench.
 
-### Proposed command interface (not yet implemented)
+## Installation
+
+The repository is currently private and is **not published on Packagist**. From a Laravel application with GitHub access to the repository:
 
 ```bash
-php artisan matma:index --source-root=app --tests-root=tests
-php artisan matma:scaffold --target=app/Services/DocumentParser.php
-php artisan matma:impact --target=app/Services/DocumentParser.php --level=2 --format=json
+composer config repositories.matma-php vcs https://github.com/rzepeda/matma-php
+composer require --dev rzepeda/matma-php:dev-main
+php artisan list --raw
+```
+
+Laravel's Composer discovery registers `Matma\Php\MatmaServiceProvider`. If package discovery is disabled, add `Matma\Php\MatmaServiceProvider::class` manually to the application's `bootstrap/providers.php`.
+
+No public distribution or license grant is implied: package metadata currently uses `proprietary`.
+
+## Command interface (Phase 1 shells)
+
+```bash
+php artisan matma:index --source-root=app --tests-root=tests --format=json
+php artisan matma:scaffold --target=App\\Services\\DocumentParser
+php artisan matma:impact --target=App\\Services\\DocumentParser --level=2 --format=yaml
 php artisan matma:validate --check
 ```
 
-Each command should accept the common options applicable to it:
+These invocations currently **do not index, scaffold, analyze impact or validate production code**.
 
-| Flag | Short | Default | Purpose |
-| --- | --- | --- | --- |
-| `--source-root` | `-s` | `app/` | Production classes |
-| `--tests-root` | `-t` | `tests/` | Generated test and manifest paths |
-| `--scaffold` | `-S` | false | Create missing mirrors during an applicable operation |
-| `--level` | `-l` | 0 | Impact radius: 0 unit; 1 interaction; 2+ transitive dependents |
-| `--target` | `-f` | none | A source file or class |
-| `--check` | `-c` | false | Nonzero exit on violations |
-| `--format` | `-o` | `text` | `text`, `json`, or `yaml` |
+| Command | Future responsibility |
+| --- | --- |
+| `matma:index` | Parse PHP ASTs, build forward/reverse dependency indexes, persist `.auto.yaml` manifests |
+| `matma:scaffold` | Create missing mirrored test and centralized mock files without overwriting existing work |
+| `matma:impact` | Use the persisted reverse-dependency index to select tests at an inclusive `--level` |
+| `matma:validate` | Audit class-file and mirror conventions without changing production code |
 
-### Structural mapping
+Shared flags: `--source-root/-s` (default `app/`), `--tests-root/-t` (`tests/`), `--scaffold/-S` (boolean), `--level/-l` (nonnegative integer, default 0), `--target/-f`, `--check/-c` (boolean), and `--format/-o` (`text`, `json`, or `yaml`).
 
-MATMA's blueprint uses snake_case source stems; for PHP the intended example is:
+| Exit code | Meaning |
+| --- | --- |
+| `2` | Valid command invocation, operation not implemented yet |
+| `64` | Invalid MATMA flag value (for example negative `--level`) |
+
+The standard shell response includes `command`, `status`, `message`, `exit_code`, and (for valid flags) `options`. JSON output is intended for coding agents.
+
+## Manual test and mock topology
+
+During Phase 1 the mirrored tree is built **manually**, because `matma:scaffold` does not exist yet. Production PHP classes follow native PascalCase names; tests use PHPUnit's `*Test.php` suffix:
 
 ```text
-app/Services/document_parser.php                    # DocumentParser
-tests/unit/mirror/Services/test_document_parser.php
-tests/interaction/mirror/Services/test_document_parser_interaction.php
-tests/mocks/mirror/Services/mock_document_parser.php
-tests/mirror/Services/document_parser.auto.yaml
-tests/business/                                      # workflow tests (not mirrored)
-tests/regression/                                    # E2E tests (not mirrored)
+src/Console/MatmaOptions.php
+tests/unit/mirror/Console/MatmaOptionsTest.php
+tests/interaction/mirror/Console/MatmaCommandInteractionTest.php
+tests/mocks/mirror/Console/MockMatmaCommand.php
+tests/mirror/                           # future .auto.yaml outputs, ignored by Git
+tests/business/                         # non-mirrored workflow tests
+tests/regression/                       # non-mirrored E2E tests, future
 ```
 
-**Laravel compatibility decision pending:** Laravel applications conventionally use PascalCase PSR-4 class files (e.g. `app/Services/DocumentParser.php`). The implementation must reconcile that convention with the blueprint's snake_case example before enforcing naming rules; do not silently rename application classes or break Composer autoloading. See [Architecture decisions](AIDocumentation/ARCHITECTURE_DECISIONS.md).
+- **Unit:** target behavior is isolated; only useful boundary doubles are centralized.
+- **Interaction:** real CLI/option/output/provider interactions are exercised with Testbench.
+- **Business:** the four command shells are exercised as a workflow; no fabricated successful index or test run.
+- **Regression:** reserved for actual external/data E2E verification, not fake placeholder assertions.
 
-## Expected manifest contents
+When scaffolding is implemented, its generated tests must **explicitly fail until assertions are authored**. The manual Phase 1 tests instead contain real, meaningful assertions about existing shell behavior.
 
-Each `tests/mirror/<sub_path>/<class_stem>.auto.yaml` must include the class name, source path, unit/interaction/mock mirror pointers, direct dependencies (including each dependency's mock pointer), and reverse dependents grouped by shortest-path levels. The AST indexer creates these manifests; agents and test tools must not edit them manually.
+## Running tests
 
-## Verification scope
+In a Laravel application: `php artisan test` (the documented execution interface).
 
-- **Level 0:** the target class's unit test.
-- **Level 1:** interaction tests associated with the target and immediate impacted classes.
-- **Level 2+:** progressively deeper reverse dependents, using the on-disk index.
+To develop MATMA itself, install Composer dependencies and run `composer test`. The repository additionally includes a minimal Laravel 11 consumer under `tests/fixtures/laravel-app/` which installs MATMA through a Composer path repository and runs real `php artisan test` tests. GitHub Actions exercises both the package's PHPUnit suites and this native Laravel smoke test.
 
-Business and regression test suites are not mirrored; selection and execution policy for these tiers must be made explicit. The initial implementation should emit or enumerate the affected tests, not execute tests implicitly unless a separate, documented runner is added.
+## Planned phases
 
-## Implementation plan
-
-Start with [AIDocumentation/TASKS.md](AIDocumentation/TASKS.md) for the phased, checkable backlog and acceptance criteria. [Architecture decisions](AIDocumentation/ARCHITECTURE_DECISIONS.md) records PHP-specific design choices requiring resolution.
-
-### Current state
-
-This README and planning documentation establish requirements only. No working commands, scaffolding, tests, or release artifacts are claimed. Installation and usage commands above are **future interface examples**, not runnable instructions today.
+See [TASKS.md](AIDocumentation/TASKS.md). Later phases add AST symbol discovery, deterministic mirrored YAML generation, centralized mock/test scaffolding, impact queries and additional business/regression integration.

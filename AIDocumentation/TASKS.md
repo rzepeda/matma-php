@@ -4,10 +4,10 @@ Source of truth: `matma_architecture_implementation_blueprint.md`; accepted PHP-
 
 ## Status (2026-11-06)
 
-- **Architectural direction agreed:** P0-01 through P0-05 all have accepted *partial* decisions, as recorded below. This does **not** mean their original acceptance criteria have passed.
+- **Architectural decisions accepted and owner-verified:** The sole maintainer has explicitly accepted and verified the Phase 0 architecture decisions. No separate reviewer sign-off is required. This does **not** replace automated tests or Composer/CI compatibility checks.
 - **Phase 0 implementation tasks completed:** **0/5**. Final contracts, fixture verification, Composer constraints and CI are outstanding.
-- **Phase 1 implementation tasks completed:** **0/5**. Package foundation has not started.
-- **Work done so far:** Documentation and architectural decisions only. Do not interpret this checklist as tested or installed functionality.
+- **Phase 1 implementation status:** all five task implementations have been authored in this phase; automated CI verification is pending, so checkboxes remain open until verified.
+- **Work authored in Phase 1:** Composer package, Laravel provider, shared CLI options/output, explicit not-implemented command shells, manually mirrored tests and central mock, fixture app, and CI workflow. Shells are **not** working AST/scaffold/impact engines.
 - **Legend:** `[x]` means the task's full **Done when** condition is satisfied; `[ ]` means incomplete even when its architectural direction is accepted.
 
 ## Phase 0 — Package contract and compatibility
@@ -29,13 +29,13 @@ Source of truth: `matma_architecture_implementation_blueprint.md`; accepted PHP-
 
 ## Phase 1 — Composer/Laravel package foundation
 
-**Status: all five tasks pending.** Begin after required Phase 0 interface contracts are settled; see [Phase 1 execution handoff](PHASE_0_1_PLAN.md#phase-1--pending-implementation-tasks).
+**Status: Phase 1 code and tests authored; awaiting CI verification.** Existing checklist boxes remain open until tests actually pass. See [Phase 1 implementation](PHASE_1_IMPLEMENTATION.md) and [Phase 1 execution handoff](PHASE_0_1_PLAN.md#phase-1--pending-implementation-tasks).
 
-- [ ] **P1-01** Create `composer.json`, PSR-4 autoload mappings, licensing, minimal source tree, and package metadata; depend on `nikic/php-parser` and `symfony/yaml`.
-- [ ] **P1-02** Register a Laravel service provider using package discovery and an optional explicit provider registration path for supported versions.
-- [ ] **P1-03** Create reusable CLI configuration/argument parsing for `--source-root/-s`, `--tests-root/-t`, `--scaffold/-S`, `--level/-l`, `--target/-f`, `--check/-c`, and `--format/-o`.
-- [ ] **P1-04** Add Artisan command shells: `matma:index`, `matma:scaffold`, `matma:impact`, and `matma:validate`; validate arguments and return consistent nonzero error codes.
-- [ ] **P1-05** Create a fixture Laravel project and automated tests for package discovery, Artisan registration, and CLI help/invalid options.
+- [ ] **P1-01** (Authored; CI pending) Create `composer.json`, PSR-4 autoload mappings, licensing, minimal source tree, and package metadata; depend on `nikic/php-parser` and `symfony/yaml`.
+- [ ] **P1-02** (Authored; CI pending) Register a Laravel service provider using package discovery and an optional explicit provider registration path for supported versions.
+- [ ] **P1-03** (Authored; CI pending) Create reusable CLI configuration/argument parsing for `--source-root/-s`, `--tests-root/-t`, `--scaffold/-S`, `--level/-l`, `--target/-f`, `--check/-c`, and `--format/-o`.
+- [ ] **P1-04** (Authored; CI pending) Add Artisan command shells: `matma:index`, `matma:scaffold`, `matma:impact`, and `matma:validate`; validate arguments and return consistent nonzero error codes.
+- [ ] **P1-05** (Authored; CI pending) Create a fixture Laravel project and automated tests for package discovery, Artisan registration, and CLI help/invalid options.
 
 ## Phase 2 — Deterministic symbol discovery and validation
 

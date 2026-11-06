@@ -1,0 +1,47 @@
+{
+  "name": "rzepeda/matma-php",
+  "description": "Multi-Tiered Agentic Testing & Mock Architecture for Laravel",
+  "type": "library",
+  "license": "proprietary",
+  "keywords": ["laravel", "testing", "mocks", "agents", "tdd"],
+  "require": {
+    "php": "^8.2",
+    "ext-json": "*",
+    "illuminate/console": "^11.0 || ^12.0 || ^13.0",
+    "illuminate/support": "^11.0 || ^12.0 || ^13.0",
+    "nikic/php-parser": "^5.0",
+    "symfony/yaml": "^7.0 || ^8.0"
+  },
+  "require-dev": {
+    "orchestra/testbench": "^9.0 || ^10.0 || ^11.0",
+    "phpunit/phpunit": "^11.5.50"
+  },
+  "autoload": {
+    "psr-4": {
+      "Matma\\Php\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Matma\\Php\\Tests\\Unit\\": "tests/unit/mirror/",
+      "Matma\\Php\\Tests\\Interaction\\": "tests/interaction/mirror/",
+      "Matma\\Php\\Tests\\Mocks\\": "tests/mocks/mirror/",
+      "Matma\\Php\\Tests\\": "tests/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Matma\\Php\\MatmaServiceProvider"
+      ]
+    }
+  },
+  "scripts": {
+    "test": "phpunit -c phpunit.xml",
+    "test:unit": "phpunit -c phpunit.xml --testsuite Unit",
+    "test:interaction": "phpunit -c phpunit.xml --testsuite Interaction",
+    "test:business": "phpunit -c phpunit.xml --testsuite Business"
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
+}
