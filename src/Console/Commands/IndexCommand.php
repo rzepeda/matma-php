@@ -10,6 +10,7 @@ use Matma\Php\Analysis\SourceInventory;
 use Matma\Php\Console\MatmaCommand;
 use Matma\Php\Console\MatmaOptions;
 use Matma\Php\Indexing\DependencyGraph;
+use Matma\Php\Indexing\IndexMetadata;
 use Matma\Php\Indexing\ManifestWriter;
 use Matma\Php\Scaffolding\ScaffoldGenerator;
 use RuntimeException;
@@ -67,12 +68,13 @@ class IndexCommand extends MatmaCommand
             }
 
             $target = $lookup === null ? null : $builder->resolveTarget($graph, $lookup);
+            $metadata = IndexMetadata::build($graph, base_path(), $options->sourceRoot);
 
             $result = $scaffold
                 ? (new ScaffoldGenerator(base_path(), $options->sourceRoot, $options->testsRoot))
-                    ->run($graph, $target)
+                    ->run($graph, $target, $metadata)
                 : [
-                    'manifests' => (new ManifestWriter(base_path(), $options->testsRoot))->write($graph['manifests']),
+                    'manifests' => (new ManifestWriter(base_path(), $options->testsRoot))->write($graph['manifests'], $metadata),
                     'scaffolds' => ['created' => [], 'existing' => []],
                     'diagnostics' => [],
                     'targets' => [],

@@ -9,12 +9,12 @@ use Matma\Php\Tests\TestCase;
 
 class MatmaCliWorkflowTest extends TestCase
 {
-    public function test_index_scaffold_and_validate_are_real_while_impact_remains_unimplemented(): void
+    public function test_index_scaffold_and_validate_are_real_and_impact_requires_indexed_target(): void
     {
         foreach (['matma:impact'] as $name) {
-            self::assertSame(2, Artisan::call($name, ['--format' => 'json']));
+            self::assertSame(64, Artisan::call($name, ['--format' => 'json']));
             $response = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
-            self::assertSame('not_implemented', $response['status']);
+            self::assertSame('invalid_options', $response['status']);
         }
 
         $sourceRoot = dirname(__DIR__, 2).'/src';

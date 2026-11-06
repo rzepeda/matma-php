@@ -55,7 +55,7 @@ class IndexCommandInteractionTest extends TestCase
         self::assertSame('indexed', $payload['status']);
         self::assertSame(15, $payload['summary']['indexed_files']);
         self::assertStringEndsWith('/app/Base.php', $payload['target']);
-        self::assertCount(15, $payload['manifests']['written']);
+        self::assertCount(16, $payload['manifests']['written']);
 
         $file = $this->outputRoot.'/mirror/Base.auto.yaml';
         self::assertFileExists($file);
@@ -76,7 +76,7 @@ class IndexCommandInteractionTest extends TestCase
         self::assertSame(0, Artisan::call('matma:index', $args));
         $payload = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
         self::assertSame([], $payload['manifests']['written']);
-        self::assertCount(15, $payload['manifests']['unchanged']);
+        self::assertCount(16, $payload['manifests']['unchanged']);
     }
 
     public function test_invalid_project_is_rejected_without_writing(): void
@@ -122,7 +122,7 @@ class IndexCommandInteractionTest extends TestCase
         self::assertSame(0, $code);
         $payload = Yaml::parse(Artisan::output());
         self::assertSame('scaffolded', $payload['status']);
-        self::assertCount(15, $payload['manifests']['written']);
+        self::assertCount(16, $payload['manifests']['written']);
         self::assertCount(3, $payload['scaffolds']['created']);
         self::assertFileExists($this->outputRoot.'/mirror/Base.auto.yaml');
         self::assertFileExists($this->outputRoot.'/unit/mirror/BaseTest.php');

@@ -127,7 +127,7 @@ final class ScaffoldGenerator
      * @param array<string, mixed> $graph
      * @return array{scaffolds: array, manifests: array, diagnostics: array, targets: array}
      */
-    public function run(array $graph, ?string $target = null): array
+    public function run(array $graph, ?string $target = null, ?array $metadata = null): array
     {
         $plan = $this->plan($graph, $target);
         $writer = new ScaffoldWriter($this->projectRoot, $this->testsRoot, $this->sourceRoot);
@@ -136,7 +136,7 @@ final class ScaffoldGenerator
         // All manifests are rebuilt, even in --target mode, so every class
         // has up-to-date reverse-dependency pointers.
         $manifests = (new ManifestWriter($this->projectRoot, $this->testsRoot))
-            ->write($graph['manifests']);
+            ->write($graph['manifests'], $metadata);
 
         $scaffolds = $writer->write($plan['files']);
 

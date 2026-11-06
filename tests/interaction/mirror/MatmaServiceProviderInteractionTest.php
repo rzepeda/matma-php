@@ -9,7 +9,7 @@ use Matma\Php\Tests\TestCase;
 
 class MatmaServiceProviderInteractionTest extends TestCase
 {
-    public function test_commands_are_registered_and_impact_alone_reports_unimplemented(): void
+    public function test_commands_are_registered_and_impact_requires_explicit_target(): void
     {
         self::assertSame(0, Artisan::call('list', ['--raw' => true]));
         $available = Artisan::output();
@@ -19,8 +19,8 @@ class MatmaServiceProviderInteractionTest extends TestCase
         }
 
         foreach (['matma:impact'] as $name) {
-            self::assertSame(2, Artisan::call($name));
-            self::assertStringContainsString('[not_implemented]', Artisan::output());
+            self::assertSame(64, Artisan::call($name));
+            self::assertStringContainsString('[invalid_options]', Artisan::output());
         }
 
         $sourceRoot = dirname(__DIR__, 3).'/src';

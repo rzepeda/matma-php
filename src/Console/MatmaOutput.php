@@ -35,6 +35,36 @@ final class MatmaOutput
             (string) ($payload['message'] ?? ''),
         )];
 
+        if (($payload['command'] ?? null) === 'matma:impact'
+            && ($payload['status'] ?? null) === 'selected') {
+            foreach ($payload['affected_sources'] ?? [] as $affected) {
+                $lines[] = sprintf(
+                    '  depth %d: %s (%s)',
+                    $affected['depth'],
+                    $affected['source_file'],
+                    $affected['class_name'] ?? 'anonymous/unnamed',
+                );
+            }
+            foreach (['unit', 'interaction'] as $tier) {
+                foreach ($payload['tests'][$tier] ?? [] as $test) {
+                    $lines[] = sprintf('  %s: %s', $tier, $test);
+                }
+            }
+            foreach ($payload['missing_tests'] ?? [] as $test) {
+                $lines[] = '  missing test: '.$test.' (run php artisan matma:scaffold)';
+            }
+            foreach (['business', 'regression'] as $tier) {
+                foreach ($payload['registered_workflows'][$tier] ?? [] as $workflow) {
+                    $lines[] = sprintf(
+                        '  registered %s: %s (%s) [not executed]',
+                        $tier,
+                        $workflow['id'],
+                        implode(', ', $workflow['tests']),
+                    );
+                }
+            }
+        }
+
         foreach ($payload['diagnostics'] ?? [] as $diagnostic) {
             $lines[] = sprintf(
                 '  %s:%d [%s] %s',

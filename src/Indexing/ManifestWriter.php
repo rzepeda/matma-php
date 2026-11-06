@@ -27,9 +27,10 @@ final class ManifestWriter
      * A full, safe preflight occurs before writes or stale cleanup.
      *
      * @param array<string, array<string, mixed>> $manifests
+     * @param array<string, mixed>|null $metadata
      * @return array{written: list<string>, unchanged: list<string>, removed: list<string>}
      */
-    public function write(array $manifests): array
+    public function write(array $manifests, ?array $metadata = null): array
     {
         $mirrorDirectory = $this->mirrorDirectory();
         $desired = [];
@@ -44,6 +45,11 @@ final class ManifestWriter
 
             $this->assertNoSymlinkAncestors($path);
             $desired[$path] = self::HEADER.Yaml::dump($manifest, 6, 2);
+        }
+        if ($metadata !== null) {
+            $path = $mirrorDirectory.'/'.IndexMetadata::NAME;
+            $this->assertNoSymlinkAncestors($path);
+            $desired[$path] = self::HEADER.Yaml::dump($metadata, 6, 2);
         }
         ksort($desired, SORT_STRING);
 

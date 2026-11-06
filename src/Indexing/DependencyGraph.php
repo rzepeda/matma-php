@@ -163,6 +163,7 @@ final class DependencyGraph
             'nodes' => $nodes,
             'symbol_sources' => $symbols,
             'fingerprint' => $fingerprint,
+            'inputs' => $inputs,
             'summary' => [
                 'source_files' => count($snapshot['files']),
                 'indexed_files' => count($nodes),

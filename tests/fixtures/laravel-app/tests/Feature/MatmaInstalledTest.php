@@ -102,6 +102,50 @@ class MatmaInstalledTest extends TestCase
         }
     }
 
+    public function test_impact_resolves_consumer_psr4_class_from_persisted_manifest(): void
+    {
+        $root = sys_get_temp_dir().'/matma-impact-consumer-'.bin2hex(random_bytes(8));
+        self::assertTrue(mkdir($root, 0775, true));
+
+        try {
+            $indexed = $this->artisanProcess(
+                'matma:index',
+                '--tests-root='.$root,
+                '--format=json',
+            );
+            self::assertSame(0, $indexed->getExitCode(), $indexed->getOutput().$indexed->getErrorOutput());
+            self::assertFileExists($root.'/mirror/.index.auto.yaml');
+
+            $impact = $this->artisanProcess(
+                'matma:impact',
+                '--target=App\Services\SmokeService',
+                '--tests-root='.$root,
+                '--level=1',
+                '--format=json',
+            );
+
+            self::assertSame(0, $impact->getExitCode(), $impact->getOutput().$impact->getErrorOutput());
+            $selection = json_decode($impact->getOutput(), true, flags: JSON_THROW_ON_ERROR);
+            self::assertSame('selected', $selection['status']);
+            self::assertSame('App\Services\SmokeService', $selection['target']['class_name']);
+            self::assertSame(1, $selection['summary']['affected_sources']);
+            self::assertCount(1, $selection['tests']['unit']);
+            self::assertCount(1, $selection['tests']['interaction']);
+            self::assertSame([], $selection['registered_workflows']['business']);
+            self::assertSame([], $selection['registered_workflows']['regression']);
+        } finally {
+            $entries = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::CHILD_FIRST,
+            );
+            foreach ($entries as $entry) {
+                $entry->isDir() && ! $entry->isLink()
+                    ? rmdir($entry->getPathname()) : unlink($entry->getPathname());
+            }
+            rmdir($root);
+        }
+    }
+
     public function test_bad_options_fail_with_an_actionable_status(): void
     {
         $result = $this->artisanProcess('matma:validate', '--level=-1', '--format=json');

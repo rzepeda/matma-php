@@ -54,7 +54,7 @@ class ScaffoldCommandInteractionTest extends TestCase
         $first = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
         self::assertSame('scaffolded', $first['status']);
         self::assertSame(0, $first['exit_code']);
-        self::assertCount(15, $first['manifests']['written']);
+        self::assertCount(16, $first['manifests']['written']);
         self::assertCount(5, $first['scaffolds']['created']);
         self::assertFileExists($this->outputRoot.'/unit/mirror/TopTest.php');
         self::assertFileExists($this->outputRoot.'/interaction/mirror/TopInteractionTest.php');
