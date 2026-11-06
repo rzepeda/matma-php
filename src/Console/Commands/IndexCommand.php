@@ -55,13 +55,17 @@ class IndexCommand extends MatmaCommand
 
             $builder = new DependencyGraph();
             $graph = $builder->build($inspection);
-            $target = $options->target === null ? null : $builder->resolveTarget(
-                $graph,
-                SourceInventory::projectRelative(
-                    base_path(),
-                    SourceInventory::normalize($options->target),
-                ),
-            );
+            $lookup = $options->target;
+            if ($lookup !== null) {
+                $normalized = SourceInventory::normalize($lookup);
+                $prefix = rtrim(SourceInventory::normalize(base_path()), '/').'/';
+                if (str_starts_with($normalized, $prefix)) {
+                    $lookup = SourceInventory::projectRelative(base_path(), $normalized);
+                }
+            }
+            // Preserve namespace backslashes for FQCN targets. Convert
+            // filesystem paths only when the input is an absolute project path.
+            $target = $lookup === null ? null : $builder->resolveTarget($graph, $lookup);
             $written = (new ManifestWriter(base_path(), $options->testsRoot))->write($graph['manifests']);
 
             return $this->report(
