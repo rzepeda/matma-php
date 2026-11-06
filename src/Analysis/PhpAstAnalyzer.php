@@ -42,6 +42,7 @@ final class PhpAstAnalyzer
                 'declarations' => $visitor->declarations(),
                 'imports' => $visitor->imports(),
                 'references' => $visitor->references(),
+                'dynamic_references' => $visitor->dynamicReferences(),
                 'diagnostics' => [],
             ];
         } catch (Error $error) {
@@ -55,6 +56,7 @@ final class PhpAstAnalyzer
             'declarations' => [],
             'imports' => [],
             'references' => [],
+            'dynamic_references' => [],
             'diagnostics' => [[
                 'severity' => 'error',
                 'code' => $code,

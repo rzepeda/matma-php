@@ -9,18 +9,20 @@ use Matma\Php\Tests\TestCase;
 
 class MatmaServiceProviderInteractionTest extends TestCase
 {
-    public function test_all_commands_are_registered_and_only_validate_has_a_real_engine(): void
+    public function test_commands_are_registered_and_only_future_engines_report_unimplemented(): void
     {
         self::assertSame(0, Artisan::call('list', ['--raw' => true]));
         $available = Artisan::output();
 
-        foreach (['matma:index', 'matma:scaffold', 'matma:impact'] as $name) {
+        foreach (['matma:index', 'matma:scaffold', 'matma:impact', 'matma:validate'] as $name) {
             self::assertStringContainsString($name, $available);
+        }
+
+        foreach (['matma:scaffold', 'matma:impact'] as $name) {
             self::assertSame(2, Artisan::call($name));
             self::assertStringContainsString('[not_implemented]', Artisan::output());
         }
 
-        self::assertStringContainsString('matma:validate', $available);
         $sourceRoot = dirname(__DIR__, 3).'/src';
         self::assertSame(0, Artisan::call('matma:validate', [
             '--source-root' => $sourceRoot,

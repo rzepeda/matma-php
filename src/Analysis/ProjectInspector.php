@@ -33,6 +33,7 @@ final class ProjectInspector
                 'declarations' => $parsed['declarations'],
                 'imports' => $parsed['imports'],
                 'references' => $parsed['references'],
+                'dynamic_references' => $parsed['dynamic_references'],
                 'mirrors' => $mapper->map($item['relative_path'], $testsRoot),
                 'diagnostics' => $parsed['diagnostics'],
             ];

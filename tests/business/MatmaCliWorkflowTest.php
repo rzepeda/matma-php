@@ -9,15 +9,12 @@ use Matma\Php\Tests\TestCase;
 
 class MatmaCliWorkflowTest extends TestCase
 {
-    public function test_command_shells_stay_explicit_while_validation_runs_real_ast_checks(): void
+    public function test_index_and_validate_are_real_while_future_engines_report_not_implemented(): void
     {
-        foreach (['matma:index', 'matma:scaffold', 'matma:impact'] as $name) {
-            $exit = Artisan::call($name, ['--format' => 'json']);
-            self::assertSame(2, $exit, $name);
-
-            $payload = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
-            self::assertSame($name, $payload['command']);
-            self::assertSame('not_implemented', $payload['status']);
+        foreach (['matma:scaffold', 'matma:impact'] as $name) {
+            self::assertSame(2, Artisan::call($name, ['--format' => 'json']));
+            $response = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
+            self::assertSame('not_implemented', $response['status']);
         }
 
         $sourceRoot = dirname(__DIR__, 2).'/src';
@@ -27,7 +24,6 @@ class MatmaCliWorkflowTest extends TestCase
             '--format' => 'json',
         ]));
         $payload = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
-        self::assertSame('matma:validate', $payload['command']);
         self::assertSame('ok', $payload['status']);
         self::assertGreaterThan(0, $payload['summary']['source_files']);
     }

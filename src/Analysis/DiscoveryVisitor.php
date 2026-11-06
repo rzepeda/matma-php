@@ -21,6 +21,9 @@ final class DiscoveryVisitor extends NodeVisitorAbstract
     /** @var array<string, true> */
     private array $references = [];
 
+    /** @var list<array{kind: string, line: int}> */
+    private array $dynamicReferences = [];
+
     private int $anonymousOrdinal = 0;
 
     /** @var list<string> */
@@ -108,6 +111,22 @@ final class DiscoveryVisitor extends NodeVisitorAbstract
             $this->addNames($node->name);
         }
 
+        if (($node instanceof Expr\New_
+                || $node instanceof Expr\Instanceof_
+                || $node instanceof Expr\StaticCall
+                || $node instanceof Expr\StaticPropertyFetch
+                || $node instanceof Expr\ClassConstFetch)
+            && $node->class instanceof Expr) {
+            $this->dynamicReferences[] = [
+                'kind' => match (true) {
+                    $node instanceof Expr\New_ => 'dynamic_new',
+                    $node instanceof Expr\Instanceof_ => 'dynamic_instanceof',
+                    default => 'dynamic_static_reference',
+                },
+                'line' => $node->getStartLine(),
+            ];
+        }
+
         return null;
     }
 
@@ -142,6 +161,12 @@ final class DiscoveryVisitor extends NodeVisitorAbstract
         sort($names, SORT_STRING);
 
         return $names;
+    }
+
+    /** @return list<array{kind: string, line: int}> */
+    public function dynamicReferences(): array
+    {
+        return $this->dynamicReferences;
     }
 
     private function addImport(Stmt\UseUse $use, string $prefix, int $parentType): void
