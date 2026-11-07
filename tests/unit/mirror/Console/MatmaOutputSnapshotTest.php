@@ -62,7 +62,7 @@ class MatmaOutputSnapshotTest extends TestCase
         $snapshot = dirname(__DIR__, 4).'/tests/fixtures/snapshots/four_commands.txt';
         self::assertSame(
             rtrim(str_replace(["\r\n", "\r"], "\n", (string) file_get_contents($snapshot)), "\n"),
-            $actual,
+            str_replace(["\r\n", "\r"], "\n", $actual),
         );
     }
 

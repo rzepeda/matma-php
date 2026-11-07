@@ -27,9 +27,16 @@ class ScaffoldWriterTest extends TestCase
             \RecursiveIteratorIterator::CHILD_FIRST,
         );
         foreach ($items as $item) {
-            $item->isDir() && (! $item->isLink() || PHP_OS_FAMILY === 'Windows')
-                ? rmdir($item->getPathname())
-                : unlink($item->getPathname());
+            $path = $item->getPathname();
+            // Windows directory symlinks/junctions may report isDir()
+            // false yet require rmdir() rather than unlink(). The iterator
+            // does not follow symlinks and this tree is a test-only temp dir.
+            if (PHP_OS_FAMILY === 'Windows' && @rmdir($path)) {
+                continue;
+            }
+            $item->isDir() && ! $item->isLink()
+                ? rmdir($path)
+                : unlink($path);
         }
         rmdir($this->project);
         parent::tearDown();
