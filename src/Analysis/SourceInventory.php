@@ -89,11 +89,30 @@ final class SourceInventory
 
     public static function projectRelative(string $projectRoot, string $path): string
     {
-        $project = rtrim(self::normalize((string) (realpath($projectRoot) ?: $projectRoot)), '/');
-        $path = self::normalize($path);
+        // On Windows the same directory may appear as a short (8.3) path
+        // or a canonical long path. Match both, with a separator boundary.
+        $roots = [
+            rtrim(self::normalize($projectRoot), '/'),
+            rtrim(self::normalize((string) (realpath($projectRoot) ?: $projectRoot)), '/'),
+        ];
+        $paths = [self::normalize($path)];
+        $resolved = realpath($path);
+        if ($resolved !== false) {
+            $paths[] = self::normalize($resolved);
+        }
 
-        return str_starts_with($path, $project.'/')
-            ? substr($path, strlen($project) + 1)
-            : $path;
+        foreach ($paths as $candidate) {
+            foreach (array_unique($roots) as $root) {
+                $prefix = $root.'/';
+                $matches = PHP_OS_FAMILY === 'Windows'
+                    ? strncasecmp($candidate, $prefix, strlen($prefix)) === 0
+                    : str_starts_with($candidate, $prefix);
+                if ($matches) {
+                    return substr($candidate, strlen($prefix));
+                }
+            }
+        }
+
+        return self::normalize($path);
     }
 }

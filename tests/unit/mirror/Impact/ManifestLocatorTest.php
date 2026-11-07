@@ -25,8 +25,8 @@ class ManifestLocatorTest extends TestCase
         self::assertSame($class, $file);
         self::assertSame($class, $relative);
         self::assertSame('app/Base.php', $class['source_file']);
-        self::assertSame($this->fixture().'/tests/mirror/Base.auto.yaml', $class['manifest_path']);
-        self::assertSame($this->fixture().'/tests/mirror/.index.auto.yaml', $locator->inventoryPath());
+        self::assertSame(str_replace('\\', '/', $this->fixture().'/tests/mirror/Base.auto.yaml'), $class['manifest_path']);
+        self::assertSame(str_replace('\\', '/', $this->fixture().'/tests/mirror/.index.auto.yaml'), $locator->inventoryPath());
     }
 
     public function test_absolute_source_path_is_supported(): void
@@ -42,7 +42,7 @@ class ManifestLocatorTest extends TestCase
         $result = $locator->locate('App\Left');
 
         self::assertSame(
-            $this->fixture().'/custom/test-location/mirror/Left.auto.yaml',
+            str_replace('\\', '/', $this->fixture().'/custom/test-location/mirror/Left.auto.yaml'),
             $result['manifest_path'],
         );
     }

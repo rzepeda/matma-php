@@ -86,7 +86,7 @@ class ScaffoldCommandInteractionTest extends TestCase
         $data = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
 
         self::assertSame("<?php // developer's test\n", file_get_contents($manual));
-        self::assertContains($manual, $data['scaffolds']['existing']);
+        self::assertContains(str_replace('\\', '/', $manual), $data['scaffolds']['existing']);
         self::assertCount(4, $data['scaffolds']['created']);
     }
 

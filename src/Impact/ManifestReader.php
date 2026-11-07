@@ -104,13 +104,17 @@ final class ManifestReader
                 || ! is_string($input[0]) || ! is_string($input[1])) {
                 throw new ImpactException('invalid_manifest', 'Malformed source inventory. Reindex.');
             }
-            $path = SourceInventory::normalize(
+            $inputPath = SourceInventory::normalize(
                 SourceInventory::absolutePath($this->projectRoot, $input[0]),
             );
+            if (! is_file($inputPath) || is_link($inputPath)) {
+                throw new ImpactException('stale_index', 'Indexed source file is missing or linked: '.$input[0]);
+            }
+            $path = SourceInventory::normalize((string) (realpath($inputPath) ?: $inputPath));
             if (! str_starts_with($path, rtrim($canonical, '/').'/')) {
                 throw new ImpactException('invalid_manifest', 'Indexed source path escapes the configured root.');
             }
-            if (! is_file($path) || is_link($path) || hash_file('sha256', $path) !== $input[1]) {
+            if (hash_file('sha256', $inputPath) !== $input[1]) {
                 throw new ImpactException(
                     'stale_index',
                     'Source changed or disappeared since indexing: '.$input[0].'. Run php artisan matma:index.',

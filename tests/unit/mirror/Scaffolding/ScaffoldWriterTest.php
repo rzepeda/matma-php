@@ -27,7 +27,9 @@ class ScaffoldWriterTest extends TestCase
             \RecursiveIteratorIterator::CHILD_FIRST,
         );
         foreach ($items as $item) {
-            $item->isDir() && ! $item->isLink() ? rmdir($item->getPathname()) : unlink($item->getPathname());
+            $item->isDir() && (! $item->isLink() || PHP_OS_FAMILY === 'Windows')
+                ? rmdir($item->getPathname())
+                : unlink($item->getPathname());
         }
         rmdir($this->project);
         parent::tearDown();

@@ -60,7 +60,10 @@ class MatmaOutputSnapshotTest extends TestCase
             $payloads,
         ));
         $snapshot = dirname(__DIR__, 4).'/tests/fixtures/snapshots/four_commands.txt';
-        self::assertSame(rtrim((string) file_get_contents($snapshot), "\r\n"), $actual);
+        self::assertSame(
+            rtrim(str_replace(["\r\n", "\r"], "\n", (string) file_get_contents($snapshot)), "\n"),
+            $actual,
+        );
     }
 
     public function test_machine_readable_json_and_yaml_preserve_tier_isolation(): void
