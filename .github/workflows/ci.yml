@@ -107,7 +107,7 @@ jobs:
       - name: Validate Composer metadata
         run: composer validate --strict
       - name: Configure supported Laravel and Testbench
-        run: composer require --dev "laravel/framework:^11.0" "orchestra/testbench:^9.0" --no-update --no-interaction
+        run: composer require --dev "laravel/framework:~11.0" "orchestra/testbench:~9.0" --no-update --no-interaction
       - name: Install dependencies (legacy Laravel 11 test-only advisory override)
         env:
           COMPOSER_POLICY_ADVISORIES_BLOCK: '0'
