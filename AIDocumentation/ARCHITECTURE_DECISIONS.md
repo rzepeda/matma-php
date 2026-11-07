@@ -1,7 +1,7 @@
 # MATMA PHP — Architecture Decision Record (ADR-001)
 
-**Status:** Architectural decisions accepted and verified by the sole maintainer; implementation contracts listed below remain open.  
-**Date:** 2026-11-06  
+**Status:** Architectural decisions owner-accepted and verified; P0-02 through P0-05 engineering contracts CI-verified. P0-01's Pest-specific compatibility matrix remains open.  
+**Updated:** 2026-11-07  
 **Scope:** MATMA implementation for PHP 8.2+ and Laravel 11 onward.  
 **Basis:** `matma_architecture_implementation_blueprint.md` and subsequent project decisions.
 
@@ -16,7 +16,7 @@ MATMA is a testing methodology and development tool. **It must adapt to the host
 - Install MATMA as a **Composer development dependency**; register Artisan commands through Laravel package discovery.
 - The documented test execution entry point is **`php artisan test`**. Preserve compatibility with a project's existing **PHPUnit or Pest** setup; MATMA does not replace its runner.
 - AST engine: `nikic/php-parser`; YAML serialization: `symfony/yaml`.
-- **Not yet specified:** final Composer package identifier/type, required PHP extensions, precise PHPUnit/Pest version constraints, and verified Laravel-version CI matrix. Do not mark P0-01 implementation acceptance complete until these are enforced and tested.
+- **Implemented compatibility baseline:** Composer identity `rzepeda/matma-php` / `library`, `ext-json`, PHP `^8.2`, Laravel package constraints `^11 || ^12 || ^13`, PHPUnit `^11.5.50`, and a five-combination PHP/Laravel Linux matrix plus Windows PHP 8.3/Laravel 11 and a real Laravel 11 consumer. **Open P0-01:** explicit Pest version/CI certification, further extension requirements and future Laravel-version acceptance; current PHPUnit baseline must not be mislabeled as native Pest DSL support.
 
 ### ADR-02 — Native naming and structural mirroring (P0-02, P0-04, D01)
 - Preserve Laravel's native **PascalCase class filenames**, PSR-4 namespaces, and the project's existing directory layout.
@@ -32,7 +32,7 @@ tests/mocks/mirror/Services/MockDocumentParser.php
 tests/mirror/Services/DocumentParser.auto.yaml
 ```
 
-- Phase 2 implemented this naming and mirror policy using `MirrorMapper` with real AST validation. No automatic renaming of application classes or source files. Case handling, symlink behavior, namespace resolution, exclusions, and traversal order must be specified and tested across supported platforms before declaring P0-04 complete.
+- Naming and mirroring are implemented and validated using `MirrorMapper`, PSR-4 fixtures and source AST checks. Phase 6 Windows/Linux tests verify canonical/8.3-short Windows aliases, separator normalization, mirror paths, exclusions and symlink handling. P0-02 and P0-04 are CI-verified for the supported baseline; application classes/files are never renamed.
 
 ### ADR-03 — Testable symbol scope (P0-03)
 - In scope: **named classes, abstract classes, interfaces, and anonymous classes**.
@@ -80,20 +80,17 @@ tests/mirror/Services/DocumentParser.auto.yaml
 - **Implemented:** `matma:impact` reports deterministic affected source files, unit/interaction tests, missing test paths, and registered workflows; it never executes tests. Only the host runs tests through `php artisan test`.
 - JSON is the preferred machine-readable output for agents; YAML remains the on-disk manifest format.
 
-## Remaining implementation contracts
+## Remaining compatibility and release boundaries
 
-These are **not accepted choices yet**; do not mistake recommendations for decisions:
+The following items should not be confused with unfinished Phase 1–6 engines:
 
-1. **Manifest freshness behavior:** **resolved by Phase 5**: fail with actionable diagnostics rather than automatically reindexing; conservative SHA-256 checks of known files plus indexed directory modification times. The command itself performs no AST parsing.
-2. **Framework-aware scaffolding:** auto-detect Pest/PHPUnit (recommended), default to PHPUnit, or use explicit configuration.
-3. **Non-mockable dependency handling:** detailed diagnostic format, failing test behavior, and supported fallback patterns (principle of no production rewrites is already accepted).
-4. **Generated-file ownership:** completed for index and impact (targeted ignore, schema+fingerprint, ownership header, safe stale cleanup, and a generated inventory used to reject stale data).
-5. **Compatibility details:** Composer package identifier/type, extension requirements, supported version ranges for PHPUnit/Pest, and CI enforcement.
-6. **PHP symbol edge cases:** enum/trait treatment, multi-declaration files, anonymous-class identifiers, and stable cross-platform path rules.
-7. **CLI contracts:** complete for all four current commands. Impact requires `--target`, uses inclusive `--level`, reports selected/missing tests and registered workflows, exits 1 on missing/stale/unsafe data, and rejects `--scaffold` as an invalid read-only operation.
+1. **P0-01 — explicit Pest compatibility certification:** PHPUnit 11-compatible generated stubs work through `php artisan test`, and existing Pest projects retain their runner, but a separately tested Pest version matrix and native Pest DSL generation are not claimed. This remains open in [TASKS.md](TASKS.md).
+2. **Release authorization:** a proposed `v0.1.0` release has been prepared, but no tag or Packagist publication has occurred. Repository visibility, proprietary licensing and security advisories require maintainer approval. See [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md).
+3. **CI and performance scope:** Phase 6 validates five Linux PHP/Laravel combinations and Windows PHP 8.3/Laravel 11, not every OS/framework permutation. PHPStan currently runs at level 0 and PHPCS enforces a focused baseline rather than full PSR-12. The observed benchmark ratio is not a performance guarantee.
+4. **Implemented contracts:** missing/stale manifest errors, generated-file ownership, PHPUnit-compatible explicit failing scaffolds, final/readonly non-mockability, anonymous-file identity, tier isolation, stable CLI schemas and exit statuses are implemented and tested in Phases 2–6. Impact never reparses ASTs or executes tests.
 
 ## Acceptance and traceability
 
-Architectural decisions have been **accepted and owner-verified**; no separate human reviewer is required. This sign-off is distinct from engineering acceptance. The Phase 1 Composer/Artisan package is implemented and passed CI on 2026-11-06 (see `PHASE_1_IMPLEMENTATION.md`). P0 tasks with outstanding AST-specific contracts remain open until their corresponding technical acceptance criteria are demonstrated.
+Architectural decisions have been **accepted and owner-verified**; no separate human reviewer is required. This sign-off is distinct from engineering acceptance. Phases 1–6 have implementation evidence; the final seven-job Windows/Linux/consumer verification is [run 42336822288](https://github.com/rzepeda/matma-php/actions/runs/42336822288). Four Phase 0 contracts are verified, while P0-01 Pest certification remains open. Owner approval does not replace security or public-release authorization.
 
 This ADR supersedes the earlier open-recommendations text in `AIDocumentation/ARCHITECTURE_DECISIONS.md`.

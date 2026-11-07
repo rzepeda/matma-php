@@ -2,25 +2,26 @@
 
 Source of truth: `matma_architecture_implementation_blueprint.md`; accepted PHP-specific decisions: [ADR-001](ARCHITECTURE_DECISIONS.md). Detailed unresolved decisions and Phase 1 handoff: [PHASE_0_1_PLAN.md](PHASE_0_1_PLAN.md).
 
-## Status (2026-11-06)
+## Status (2026-11-07)
 
 - **Architectural decisions accepted and owner-verified:** The sole maintainer has explicitly accepted and verified the Phase 0 architecture decisions. No separate reviewer sign-off is required. This does **not** replace automated tests or Composer/CI compatibility checks.
-- **Phase 0 implementation tasks completed:** **0/5**. Final contracts, fixture verification, Composer constraints and CI are outstanding.
+- **Phase 0 implementation tasks completed and verified:** **4/5**. P0-02 through P0-05 have source/mirror and Windows/Linux CI evidence. P0-01 remains open for an explicit Pest compatibility/version matrix; PHPUnit 11 is the verified baseline.
 - **Phase 1 implementation tasks completed and verified:** **5/5**. [CI run 42277378877](https://github.com/rzepeda/matma-php/actions/runs/42277378877) passed all six jobs.
 - **Phase 2 implementation tasks completed and verified:** **6/6**. [CI run 42285897847](https://github.com/rzepeda/matma-php/actions/runs/42285897847) passed all six jobs.
 - **Phase 3 implementation tasks completed and verified:** **6/6**. [CI run 42291922018](https://github.com/rzepeda/matma-php/actions/runs/42291922018) passed all six jobs.
 - **Phase 4 implementation tasks completed and verified:** **5/5**. [CI run 42294621231](https://github.com/rzepeda/matma-php/actions/runs/42294621231) passed all six jobs, including deliberately failing generated-test verification.
 - **Phase 5 implementation tasks completed and verified:** **5/5**. [CI run 42299323812](https://github.com/rzepeda/matma-php/actions/runs/42299323812) passed all six jobs, including a Laravel consumer lookup by PSR-4 class name.
-- **Implemented today:** All four MATMA Artisan commands. Impact selection reads persisted YAML and explicit workflow registrations without AST parsing or test execution; generated tests remain explicitly failing until authored. YAML is ignored by Git; production source is untouched.
+- **Phase 6 implementation tasks completed and verified:** **6/6**. [CI run 42336822288](https://github.com/rzepeda/matma-php/actions/runs/42336822288) passed seven jobs including Windows; Linux and Windows package suites passed 116 tests/502 assertions, Laravel consumer passed 6 tests/59 assertions, quality gates and benchmark artifact were produced.
+- **Implemented today:** All four MATMA commands, Laravel end-to-end walkthrough, manifest-only impact, Windows/Linux compatibility tests, focused static/style checks, snapshot tests and benchmark. A v0.1.0 release is **prepared, not tagged or published**; P0-01 Pest-version certification remains open.
 - **Legend:** `[x]` means the task's full **Done when** condition is satisfied; `[ ]` means incomplete even when its architectural direction is accepted.
 
 ## Phase 0 — Package contract and compatibility
 
-- [ ] **P0-01** Define supported PHP and Laravel versions, Composer package name/type, extension requirements, and PHPUnit/Pest compatibility matrix. **Accepted:** PHP **8.2+**, Laravel **11 onward**, Composer dev dependency, Laravel package discovery, `php artisan test`, preserve host PHPUnit/Pest choice; `nikic/php-parser` + `symfony/yaml`. **Pending:** Composer identity/type, extension list, framework/test-library version constraints, CI compatibility matrix. **Done when:** compatibility is documented and enforced in Composer/CI.
-- [ ] **P0-02** Resolve blueprint snake_case filename convention vs Laravel's PSR-4 PascalCase files; choose an explicit strict/compatibility policy and deterministic mapping. **Accepted:** preserve native Laravel/PSR-4 names and project paths, mirror source-relative structure in `tests/`, never rename source code; anonymous classes inherit their containing source file identity for test selection. **Pending:** precise mirrored test/mock class filenames and namespaces, allowed/disallowed mapping fixtures. **Done when:** examples and tests cover both allowed and disallowed names.
-- [ ] **P0-03** Define source symbol scope: classes, abstract classes, enums, interfaces, traits, anonymous classes, and multi-declaration files. **Accepted:** named classes, abstract classes, interfaces and anonymous classes are testable targets; anonymous classes have no standalone PSR-4 test identity. **Pending:** treatment of traits/enums as dependencies or targets; multi-declaration validation and stable anonymous-node identifiers. **Done when:** each construct has a documented audit/indexing rule.
-- [ ] **P0-04** Define deterministic file/path normalization, Composer namespace resolution, case sensitivity, symlinks, excluded directories, and file traversal order. **Accepted:** preserve source-relative path and directory casing beneath `tests/`, resolve without runtime filesystem searches at impact-query time. **Pending:** cross-platform normalization, PSR-4 autoload map precedence, case mismatch behavior, symlink policy, exclusions, deterministic traversal and fixtures. **Done when:** mappings behave identically across supported platforms.
-- [ ] **P0-05** Decide test stub strategy and command policy (generate only missing files; never overwrite user edits); define JSON/YAML output schema and exit codes. **Accepted:** only missing files are generated; never overwrite edits or production code; generated tests fail explicitly; centralized mocks; non-mockable dependencies receive diagnostics; `php artisan test` executes tests; `impact` only selects; JSON CLI output and YAML on-disk manifests. **Pending:** PHPUnit/Pest generator selection, exact CLI JSON/YAML schemas and exit codes, stale-index behavior, fixture tests for safety/idempotence. **Done when:** fixtures assert contract and idempotence.
+- [ ] **P0-01** Define supported PHP/Laravel versions, Composer identity/type, extension requirements and PHPUnit/Pest compatibility. **Implemented:** package `rzepeda/matma-php` (`type: library`, proprietary), PHP ^8.2, ext-json, Laravel 11–13 version constraints, parser/YAML dependencies, PHPUnit ^11.5.50, and five PHP/Laravel CI combinations plus Windows and a Laravel consumer. **Still pending:** an explicitly tested Pest-version compatibility matrix and final extension/support certification beyond the current matrix. **Done when:** the full PHPUnit/Pest compatibility claim is documented and verified without implying native Pest DSL support.
+- [x] **P0-02** Preserve native Laravel PascalCase filenames, PSR-4 namespaces and source-relative mirror paths. Deterministic `ClassNameTest.php`, `ClassNameInteractionTest.php`, `MockClassName.php` and YAML mappings are implemented; valid, invalid-casing and namespace fixtures verify accepted/rejected names. **Evidence:** Phases 2 and 4 tests and documentation.
+- [x] **P0-03** Classes, abstract classes, interfaces and anonymous classes are test targets; traits and enums are dependency-only graph symbols; multi-primary declaration violations are diagnosed; anonymous classes use source-file identity with ordered AST identifiers. **Evidence:** Phases 2, 3 and 5 tests/docs.
+- [x] **P0-04** Deterministic path/namespace mapping, exclusions, symlink and case policies are defined and tested. Windows/PHP 8.3 and Linux CI validate equivalent project-relative identities, including short-vs-canonical Windows paths, plus Composer PSR-4 and stable traversal. **Evidence:** Phase 6 CI run 42336822288.
+- [x] **P0-05** Only missing test/mock files are generated, with real failing PHPUnit-compatible stubs, idempotent no-clobber behavior, diagnostics for unmockable symbols, JSON/YAML output and stable exit codes, and explicit reindex requirements for stale impact data. The host still uses `php artisan test`; Pest-native DSL generation is not claimed. **Evidence:** Phases 4–6 tests.
 
 ### Agreed cross-cutting behavior (not new completed tasks)
 
@@ -85,12 +86,14 @@ Source of truth: `matma_architecture_implementation_blueprint.md`; accepted PHP-
 
 ## Phase 6 — Integration, CI, documentation, release
 
-- [ ] **P6-01** Build PHPUnit test suite covering all four commands, failure modes, deterministic path mapping, YAML schema, graph correctness, scaffolding safety, and output snapshots.
-- [ ] **P6-02** Add CI matrix for supported PHP/Laravel versions: Composer validation, style/static analysis, unit/integration tests, and package install smoke test.
-- [ ] **P6-03** Add a sample Laravel app and complete documented walkthrough for `index → scaffold → validate → impact`.
-- [ ] **P6-04** Document package installation via Composer, Artisan registration, supported naming policy, flags, test execution, migration/adoption, and troubleshooting.
-- [ ] **P6-05** Benchmark manifest lookup vs AST indexing separately; verify lookup depends on persisted data rather than parsing the source tree.
-- [ ] **P6-06** Prepare release tagging/versioning and package publication steps (if publishing to Packagist); update README status after tests pass.
+**Status: 6/6 tasks implemented and CI-verified.** [Phase 6 report](PHASE_6_IMPLEMENTATION.md), [adoption guide](ADOPTION_GUIDE.md), [release checklist](RELEASE_CHECKLIST.md); [seven-job CI run 42336822288](https://github.com/rzepeda/matma-php/actions/runs/42336822288). A release was prepared but **not created**.
+
+- [x] **P6-01** Build PHPUnit test suite covering all four commands, failure modes, deterministic path mapping, YAML schema, graph correctness, scaffolding safety, and output snapshots.
+- [x] **P6-02** Add CI matrix for supported PHP/Laravel versions: Composer validation, style/static analysis, unit/integration tests, and package install smoke test.
+- [x] **P6-03** Add a sample Laravel app and complete documented walkthrough for `index → scaffold → validate → impact`.
+- [x] **P6-04** Document package installation via Composer, Artisan registration, supported naming policy, flags, test execution, migration/adoption, and troubleshooting.
+- [x] **P6-05** Benchmark manifest lookup vs AST indexing separately; verify lookup depends on persisted data rather than parsing the source tree.
+- [x] **P6-06** Prepare release tagging/versioning and package publication steps (if publishing to Packagist); update README status after tests pass.
 
 ## Milestone acceptance criteria
 
@@ -99,8 +102,8 @@ Source of truth: `matma_architecture_implementation_blueprint.md`; accepted PHP-
 - **M3 — Indexed:** a single index pass writes correct stable reverse-dependency manifests.
 - **M4 — Scaffoldable:** new classes obtain mirrored unit/interaction/mock files without overwriting existing work.
 - **M5 — Queryable:** each `--level` selects the expected scoped tests using persisted manifests without AST reparse.
-- **M6 — Releasable:** documentation, integration tests, CI, and compatibility matrix are complete.
+- **M6 — Release candidate prepared:** Phase 6 documentation, integration tests, verified PHP/Laravel/PHPUnit baseline CI and benchmarks are complete. A public/private release still requires maintainer approval and resolution or explicit scoping of P0-01 Pest certification and security/license gates.
 
 ## Implementation order
 
-Phases 1–5 are implemented and CI-verified. Proceed to Phase 6 end-to-end integration, Windows/other platform hardening, benchmarking, documentation and release readiness. Generated failing stubs never count as completed test coverage; business/regression workflows are explicitly registered and run only through the host's `php artisan test`.
+Phases 1–6 are implemented and the Phase 6 seven-job Linux/Windows/consumer matrix is green. The proposed v0.1.0 release is not tagged or published. P0-01 remains open pending explicit Pest-version compatibility certification; before publication, confirm proprietary licensing/visibility, dependency advisories and all release gates. Generated failing stubs are not completed test coverage; business/regression workflows are selected separately and run explicitly with `php artisan test`.

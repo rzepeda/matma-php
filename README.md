@@ -4,16 +4,16 @@ MATMA is an agent-oriented testing architecture for PHP/Laravel. It preserves th
 
 ## Implementation status
 
-**Phases 1–5 are implemented and CI-verified.** MATMA discovers and validates PHP symbols, builds deterministic forward/reverse dependencies, safely scaffolds failing unit/interaction tests and centralized mocks, and selects affected verification through **read-only `matma:impact`**. All four Artisan commands now work. No command rewrites production PHP; impact never parses source ASTs or executes tests.
+**Phases 1–6 are implemented and CI-verified.** MATMA discovers and validates PHP symbols, builds deterministic dependency manifests, safely scaffolds explicitly failing unit/interaction tests and centralized PHPUnit mock factories, and selects verification through read-only `matma:impact`. All four Artisan commands work; none rewrites production PHP or automatically executes tests. **Release preparation is complete, but no version tag, GitHub Release, or Packagist publication has been created.**
 
-Architecture: [accepted ADR](AIDocumentation/ARCHITECTURE_DECISIONS.md) · [task checklist](AIDocumentation/TASKS.md) · [Phase 1 implementation details](AIDocumentation/PHASE_1_IMPLEMENTATION.md) · [Phase 2 implementation details](AIDocumentation/PHASE_2_IMPLEMENTATION.md) · [Phase 3 implementation details](AIDocumentation/PHASE_3_IMPLEMENTATION.md) · [Phase 4 implementation details](AIDocumentation/PHASE_4_IMPLEMENTATION.md) · [Phase 5 implementation details](AIDocumentation/PHASE_5_IMPLEMENTATION.md)
+Architecture: [accepted ADR](AIDocumentation/ARCHITECTURE_DECISIONS.md) · [task checklist](AIDocumentation/TASKS.md) · [Phase 1 implementation details](AIDocumentation/PHASE_1_IMPLEMENTATION.md) · [Phase 2 implementation details](AIDocumentation/PHASE_2_IMPLEMENTATION.md) · [Phase 3 implementation details](AIDocumentation/PHASE_3_IMPLEMENTATION.md) · [Phase 4 implementation details](AIDocumentation/PHASE_4_IMPLEMENTATION.md) · [Phase 5 implementation details](AIDocumentation/PHASE_5_IMPLEMENTATION.md) · [Phase 6 implementation details](AIDocumentation/PHASE_6_IMPLEMENTATION.md) · [adoption guide](AIDocumentation/ADOPTION_GUIDE.md) · [release checklist](AIDocumentation/RELEASE_CHECKLIST.md) · [changelog](CHANGELOG.md)
 
 ## Compatibility
 
 - PHP **8.2+**.
 - Laravel **11 onward**, with per-version CI matrices (the Laravel version's own minimum PHP requirement still applies).
 - Composer development dependency with Laravel package discovery. No production file changes.
-- PHPUnit **or** Pest projects can continue to use Laravel's native `php artisan test`. MATMA's *package* test suite currently uses PHPUnit and Orchestra Testbench.
+- PHPUnit **or** Pest projects can continue to use Laravel's native `php artisan test`. MATMA generates PHPUnit-compatible tests; its tested baseline is PHPUnit 11, not a separately certified Pest version matrix.
 
 ## Installation
 
@@ -98,12 +98,30 @@ tests/regression/                       # non-mirrored E2E tests, future
 
 Generated tests contain `self::fail('MATMA: implement ...')` and can be executed explicitly with `php artisan test tests/unit/mirror/<path>/ClassTest.php`. The scaffolder does not modify a Laravel project's existing PHPUnit suite configuration; default `php artisan test` discovery may need the generated lower-case mirror directories explicitly configured. Mock factories require real PHPUnit doubles instead of fake passing implementations. See [Phase 4](AIDocumentation/PHASE_4_IMPLEMENTATION.md).
 
+## Full Laravel consumer walkthrough
+
+The fixture application now includes `App\Services\SmokeService` and the dependent `App\Services\SmokeConsumer`. From `tests/fixtures/laravel-app` after Composer installation:
+
+```bash
+php artisan matma:index --format=json
+php artisan matma:scaffold --target='App\Services\SmokeConsumer' --format=json
+php artisan matma:validate --check --format=json
+php artisan matma:impact --target='App\Services\SmokeService' --level=1 --format=json
+php artisan test tests/unit/mirror/Services/SmokeConsumerTest.php
+```
+
+The last command is **expected to fail until assertions are authored**. MATMA-generated stubs never report false success. The fixture's own feature test verifies this deliberate failure and confirms that rerunning scaffolding preserves developer edits.
+
 ## Running tests
 
 In a Laravel application: `php artisan test` (the documented execution interface).
 
-To develop MATMA itself, install Composer dependencies and run `composer test`. The repository additionally includes a minimal Laravel 11 consumer under `tests/fixtures/laravel-app/` which installs MATMA through a Composer path repository and runs real `php artisan test` tests. GitHub Actions exercises both the package's PHPUnit suites and this native Laravel smoke test. [Phase 5 CI run 42299323812](https://github.com/rzepeda/matma-php/actions/runs/42299323812) passed all six jobs: five PHP/Laravel package combinations (112 package tests, 484 assertions in the checked job) plus the Laravel 11 consumer's `php artisan test` (5 tests, 35 assertions).
+To develop MATMA itself, install Composer dependencies and run `composer test`, `composer analyse` (PHPStan level 0) and `composer style:check` (focused PHPCS rules, not full PSR-12). The real Laravel 11 consumer in `tests/fixtures/laravel-app/` installs MATMA via Composer path repository and runs `php artisan test`. [Phase 6 CI run 42336822288](https://github.com/rzepeda/matma-php/actions/runs/42336822288) passed **all seven jobs**: five PHP/Laravel package combinations, the Laravel consumer and Windows/PHP 8.3/Laravel 11. The checked package and Windows jobs each passed **116 tests with 502 assertions**; the Laravel consumer passed **6 tests with 59 assertions**.
 
-## Planned phases
+## Benchmark and release preparation
 
-See [TASKS.md](AIDocumentation/TASKS.md). Phases 1–5 are implemented. Phase 6 covers full workflow documentation, cross-platform verification, benchmarks and release packaging.
+The reproducible `benchmarks/benchmark.php` measures AST indexing + YAML writes separately from manifest-based impact selection + indexed-source hash checks. The Phase 6 CI job retains a JSON benchmark artifact. A representative 100-class, five-sample Linux run measured **122.537 ms** indexing versus **7.321 ms** impact lookup (16.737× on that runner only; not a performance guarantee). Run `php benchmarks/benchmark.php --classes=100 --iterations=5` locally to compare your environment. Impact still hashes known source files and does not provide constant-time end-to-end I/O.
+
+[ADOPTION_GUIDE.md](AIDocumentation/ADOPTION_GUIDE.md) covers migrating existing suites, native Laravel naming and troubleshooting. [RELEASE_CHECKLIST.md](AIDocumentation/RELEASE_CHECKLIST.md) proposes **v0.1.0** and documents approval gates, tag creation and optional Packagist publication. **No tag or distribution has been published**, and the repository remains private with a proprietary license. Pest-specific version certification remains a separate compatibility item.
+
+See [TASKS.md](AIDocumentation/TASKS.md) for Phase 6 acceptance and remaining Phase 0 compatibility details.

@@ -1,10 +1,10 @@
 # MATMA PHP — Phase 0 Decision Register and Phase 1 Completion Record
 
-**Status:** Phase 0 architectural decisions are owner-approved and owner-verified; detailed technical contracts remain open. **Phase 1 completed and passed CI on 2026-11-06.**  
-**Updated:** 2026-11-06  
+**Status:** Historical Phase 0/Phase 1 decision register. Phase 1–6 are implemented and CI-verified; P0-02 through P0-05 are closed by later engineering evidence, while P0-01 Pest-specific version certification remains open. Current decisions: [ADR-001](ARCHITECTURE_DECISIONS.md), current completion: [TASKS.md](TASKS.md).  
+**Updated:** 2026-11-07  
 **References:** [Accepted ADR-001](ARCHITECTURE_DECISIONS.md), [task checklist](TASKS.md).
 
-## Phase 0 — Accepted direction vs pending decisions
+## Phase 0 — Accepted direction and historical pending decisions (superseded by implementation)
 
 | Task | Accepted decisions | Remaining decisions / verification |
 | --- | --- | --- |
@@ -13,6 +13,8 @@
 | P0-03 | Target named/abstract/anonymous classes and interfaces; anonymous classes inherit container-file test identity | Trait/enum policy; multi-declaration files; stable internal identities for multiple anonymous classes |
 | P0-04 | Mirror source-relative directory layout; deterministic resolution without impact-time search | Composer namespace mapping, separator normalization, case policy, symlinks, exclusions, sort order and cross-platform fixtures |
 | P0-05 | Create only missing files; failing stubs; never overwrite; centralized mocks; output JSON and generated YAML; `php artisan test` | Generator framework selection; mocks for non-mockable cases; CLI schemas/exit codes; stale-manifest behavior; idempotence tests |
+
+The following table records the **original** Phase 0 requests. Its "remaining" column describes what was pending at the Phase 1 handoff, not the current state. Phase 6 Windows/Linux CI and the Phase 2–5 implementations have since resolved P0-02 through P0-05. Only the P0-01 Pest-specific version matrix remains open; consult [TASKS.md](TASKS.md) for current acceptance.
 
 ### Phase 0 technical contract register (updated after Phase 1)
 
