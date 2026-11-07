@@ -39,7 +39,7 @@ class MatmaInstalledTest extends TestCase
             self::assertSame(0, $result->getExitCode(), $result->getErrorOutput());
             $payload = json_decode($result->getOutput(), true, flags: JSON_THROW_ON_ERROR);
             self::assertSame('indexed', $payload['status']);
-            self::assertSame(1, $payload['summary']['indexed_files']);
+            self::assertSame(2, $payload['summary']['indexed_files']);
             $file = $temporaryRoot.'/mirror/Services/SmokeService.auto.yaml';
             self::assertFileExists($file);
             $parsed = Yaml::parse((string) file_get_contents($file));
@@ -126,11 +126,99 @@ class MatmaInstalledTest extends TestCase
             $selection = json_decode($impact->getOutput(), true, flags: JSON_THROW_ON_ERROR);
             self::assertSame('selected', $selection['status']);
             self::assertSame('App\Services\SmokeService', $selection['target']['class_name']);
-            self::assertSame(1, $selection['summary']['affected_sources']);
-            self::assertCount(1, $selection['tests']['unit']);
-            self::assertCount(1, $selection['tests']['interaction']);
+            self::assertSame(2, $selection['summary']['affected_sources']);
+            self::assertCount(2, $selection['tests']['unit']);
+            self::assertCount(2, $selection['tests']['interaction']);
             self::assertSame([], $selection['registered_workflows']['business']);
             self::assertSame([], $selection['registered_workflows']['regression']);
+        } finally {
+            $entries = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::CHILD_FIRST,
+            );
+            foreach ($entries as $entry) {
+                $entry->isDir() && ! $entry->isLink()
+                    ? rmdir($entry->getPathname()) : unlink($entry->getPathname());
+            }
+            rmdir($root);
+        }
+    }
+
+    public function test_end_to_end_index_scaffold_validate_impact_preserves_developer_tests(): void
+    {
+        $root = sys_get_temp_dir().'/matma-walkthrough-'.bin2hex(random_bytes(8));
+        self::assertTrue(mkdir($root, 0775, true));
+
+        try {
+            $indexed = $this->artisanProcess('matma:index', '--tests-root='.$root, '--format=json');
+            self::assertSame(0, $indexed->getExitCode(), $indexed->getOutput().$indexed->getErrorOutput());
+            $index = json_decode($indexed->getOutput(), true, flags: JSON_THROW_ON_ERROR);
+            self::assertSame('indexed', $index['status']);
+            self::assertSame(2, $index['summary']['indexed_files']);
+            self::assertSame(1, $index['summary']['internal_edges']);
+
+            $scaffold = $this->artisanProcess(
+                'matma:scaffold',
+                '--target=App\Services\SmokeConsumer',
+                '--tests-root='.$root,
+                '--format=json',
+            );
+            self::assertSame(0, $scaffold->getExitCode(), $scaffold->getOutput().$scaffold->getErrorOutput());
+            $generated = json_decode($scaffold->getOutput(), true, flags: JSON_THROW_ON_ERROR);
+            self::assertSame('scaffolded', $generated['status']);
+            self::assertCount(4, $generated['scaffolds']['created']);
+            self::assertSame([], $generated['manifests']['written']);
+
+            $validated = $this->artisanProcess(
+                'matma:validate',
+                '--target=App\Services\SmokeConsumer',
+                '--check',
+                '--format=json',
+            );
+            self::assertSame(0, $validated->getExitCode(), $validated->getOutput().$validated->getErrorOutput());
+            $assessment = json_decode($validated->getOutput(), true, flags: JSON_THROW_ON_ERROR);
+            self::assertSame('ok', $assessment['status']);
+
+            $impact = $this->artisanProcess(
+                'matma:impact',
+                '--target=App\Services\SmokeService',
+                '--tests-root='.$root,
+                '--level=1',
+                '--format=json',
+            );
+            self::assertSame(0, $impact->getExitCode(), $impact->getOutput().$impact->getErrorOutput());
+            $selected = json_decode($impact->getOutput(), true, flags: JSON_THROW_ON_ERROR);
+            self::assertSame('selected', $selected['status']);
+            self::assertSame([
+                'app/Services/SmokeService.php',
+                'app/Services/SmokeConsumer.php',
+            ], array_column($selected['affected_sources'], 'source_file'));
+            self::assertSame([0, 1], array_column($selected['affected_sources'], 'depth'));
+            self::assertCount(2, $selected['tests']['unit']);
+            self::assertCount(2, $selected['tests']['interaction']);
+            self::assertCount(2, $selected['missing_tests']);
+
+            $testFile = $root.'/unit/mirror/Services/SmokeConsumerTest.php';
+            self::assertFileExists($testFile);
+            $failing = $this->artisanProcess('test', $testFile);
+            self::assertNotSame(0, $failing->getExitCode());
+            self::assertStringContainsString(
+                'MATMA: implement unit assertions',
+                $failing->getOutput().$failing->getErrorOutput(),
+            );
+
+            $developerContent = "<?php // developer-authored replacement\n";
+            file_put_contents($testFile, $developerContent);
+            $repeated = $this->artisanProcess(
+                'matma:scaffold',
+                '--target=App\Services\SmokeConsumer',
+                '--tests-root='.$root,
+                '--format=json',
+            );
+            self::assertSame(0, $repeated->getExitCode(), $repeated->getOutput().$repeated->getErrorOutput());
+            $repeat = json_decode($repeated->getOutput(), true, flags: JSON_THROW_ON_ERROR);
+            self::assertSame([], $repeat['scaffolds']['created']);
+            self::assertSame($developerContent, file_get_contents($testFile));
         } finally {
             $entries = new \RecursiveIteratorIterator(
                 new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS),

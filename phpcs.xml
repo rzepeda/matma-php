@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<ruleset name="MATMA PHP baseline style">
+    <description>Focused, enforceable source checks; wider PSR-12 adoption is a separate change.</description>
+    <file>src</file>
+    <arg name="extensions" value="php"/>
+    <rule ref="Generic.PHP.LowerCaseConstant"/>
+    <rule ref="Generic.Files.EndFileNewline"/>
+    <rule ref="Squiz.WhiteSpace.SuperfluousWhitespace"/>
+</ruleset>

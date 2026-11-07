@@ -3,7 +3,13 @@
   "description": "Multi-Tiered Agentic Testing & Mock Architecture for Laravel",
   "type": "library",
   "license": "proprietary",
-  "keywords": ["laravel", "testing", "mocks", "agents", "tdd"],
+  "keywords": [
+    "laravel",
+    "testing",
+    "mocks",
+    "agents",
+    "tdd"
+  ],
   "require": {
     "php": "^8.2",
     "ext-json": "*",
@@ -14,7 +20,9 @@
   },
   "require-dev": {
     "orchestra/testbench": "^9.0 || ^10.0 || ^11.0",
-    "phpunit/phpunit": "^11.5.50"
+    "phpunit/phpunit": "^11.5.50",
+    "phpstan/phpstan": "^2.1",
+    "squizlabs/php_codesniffer": "^3.11"
   },
   "autoload": {
     "psr-4": {
@@ -40,7 +48,9 @@
     "test": "phpunit -c phpunit.xml",
     "test:unit": "phpunit -c phpunit.xml --testsuite Unit",
     "test:interaction": "phpunit -c phpunit.xml --testsuite Interaction",
-    "test:business": "phpunit -c phpunit.xml --testsuite Business"
+    "test:business": "phpunit -c phpunit.xml --testsuite Business",
+    "analyse": "phpstan analyse -c phpstan.neon --no-progress",
+    "style:check": "phpcs --standard=phpcs.xml"
   },
   "minimum-stability": "stable",
   "prefer-stable": true

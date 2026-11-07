@@ -48,9 +48,26 @@ jobs:
           COMPOSER_POLICY_ADVISORIES_BLOCK: ${{ matrix.laravel == '^11.0' && '0' || '1' }}
         run: composer update --no-interaction --prefer-dist --no-progress
       - name: Check PHP syntax
-        run: find src tests -name '*.php' -not -path '*/fixtures/*' -print0 | xargs -0 -n1 php -l
+        run: find src tests benchmarks -name '*.php' -not -path '*/fixtures/*' -print0 | xargs -0 -n1 php -l
       - name: Run package tests
         run: vendor/bin/phpunit -c phpunit.xml
+      - name: PHPStan static analysis
+        if: ${{ matrix.php == '8.3' && matrix.laravel == '^12.0' }}
+        run: composer analyse
+      - name: PHPCS focused style checks
+        if: ${{ matrix.php == '8.3' && matrix.laravel == '^12.0' }}
+        run: composer style:check
+      - name: Benchmark AST indexing versus manifest lookup
+        if: ${{ matrix.php == '8.3' && matrix.laravel == '^12.0' }}
+        run: |
+          php benchmarks/benchmark.php --classes=100 --iterations=5 > benchmark-result.json
+          cat benchmark-result.json
+      - uses: actions/upload-artifact@v4
+        if: ${{ matrix.php == '8.3' && matrix.laravel == '^12.0' }}
+        with:
+          name: matma-phase6-benchmark
+          path: benchmark-result.json
+          if-no-files-found: error
 
   laravel-install-smoke:
     name: Laravel 11 app install / php artisan test
@@ -75,3 +92,34 @@ jobs:
       - name: Run fixture's native Laravel test runner
         working-directory: tests/fixtures/laravel-app
         run: php artisan test
+
+  windows-compatibility:
+    name: Windows / PHP 8.3 / Laravel 11
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, dom, xml, ctype, tokenizer, fileinfo, openssl
+          coverage: none
+          tools: composer:v2
+      - name: Validate Composer metadata
+        run: composer validate --strict
+      - name: Configure supported Laravel and Testbench
+        run: composer require --dev "laravel/framework:^11.0" "orchestra/testbench:^9.0" --no-update --no-interaction
+      - name: Install dependencies (legacy Laravel 11 test-only advisory override)
+        env:
+          COMPOSER_POLICY_ADVISORIES_BLOCK: '0'
+        run: composer update --no-interaction --prefer-dist --no-progress
+      - name: Check PHP syntax
+        shell: pwsh
+        run: |
+          Get-ChildItem src,tests,benchmarks -Recurse -Filter *.php |
+            Where-Object { $_.FullName -notmatch '[\\/]fixtures[\\/]' } |
+            ForEach-Object {
+              & php -l $_.FullName
+              if ($LASTEXITCODE -ne 0) { throw "PHP lint failed: $($_.FullName)" }
+            }
+      - name: Run cross-platform PHPUnit suite
+        run: vendor/bin/phpunit.bat -c phpunit.xml

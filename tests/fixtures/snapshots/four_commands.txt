@@ -1,0 +1,14 @@
+matma:index [indexed] Indexed graph.
+---
+matma:scaffold [scaffolded] Missing mirrors created.
+---
+matma:validate [ok] Structural audit passed.
+---
+matma:impact [selected] Selected impacted tests; no tests executed.
+  depth 0: app/Services/Base.php (App\Services\Base)
+  depth 1: app/Services/Consumer.php (App\Services\Consumer)
+  unit: tests/unit/mirror/Services/BaseTest.php
+  unit: tests/unit/mirror/Services/ConsumerTest.php
+  interaction: tests/interaction/mirror/Services/BaseInteractionTest.php
+  missing test: tests/unit/mirror/Services/ConsumerTest.php (run php artisan matma:scaffold)
+  registered business: document-flow (tests/business/DocumentWorkflowTest.php) [not executed]
