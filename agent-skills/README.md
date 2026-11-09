@@ -2,6 +2,14 @@
 
 These three folders are separate installable Agent Skills for the MATMA Laravel package. Each has its own SKILL.md and reference files. The folders under agent-skills are distribution copies, not automatically active in the MATMA repository.
 
+## The governing seven-rule methodology
+
+**Correction to the initial skills:** the first skill files described commands and tier directories, but did not contain the complete accepted MATMA architectural rules. Each skill now bundles the **full authoritative seven-rule document** under references/MATMA_Seven_Architectural_Rules.md and must read it before creating or reviewing tests. The canonical source is AIDocumentation/MATMA_Seven_Architectural_Rules.md.
+
+Each skill also bundles references/php-enforcement.md as a mandatory PHP-specific audit, with the exact real/mock boundaries. Unit: one real class; Interaction: two real collaborators; Business: real internal classes and mocked external service boundaries; Regression: real representative datasets and real/live/containerized services, no participating-service mocks, with a separate pre-merge or pre-deployment gateway. Mirrored class-centric topology and centralized reusable mocks are mandatory. The generator does not enforce all authored test's real-vs-mock boundaries; an AI agent must inspect and verify them.
+
+**When replacing an old skill installation, replace its entire folder** so that SKILL.md, the rules, and all references come from the same version.
+
 ## Laravel project setup
 
 MATMA currently requires Laravel/Artisan; it is not directly executable on plain PHP projects. Supported package baseline: PHP 8.2+ with Laravel 11, 12 or 13. The repository is private and there is no published Packagist release or approved version tag. From your intended Laravel project root, authenticate Composer with GitHub and run:

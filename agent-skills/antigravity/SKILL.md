@@ -5,9 +5,24 @@ description: Use in Antigravity Laravel workspaces to run MATMA, validate/index 
 
 # MATMA PHP skill for Google Antigravity
 
+## Mandatory governing rules (not optional)
+
+**Before writing or reviewing any MATMA test, read [the full accepted seven rules](references/MATMA_Seven_Architectural_Rules.md), [the PHP enforcement checklist](references/php-enforcement.md), and [the four-tier authoring guide](references/test-tiers.md). Do not substitute generic testing conventions for MATMA isolation.**
+
+1. **One class per file:** match the source, test or mock class identifier to its PHP filename using native Composer PSR-4/PascalCase. Never rename production to copy a generic snake_case example.
+2. **Unit tests:** the target class A is the sole real class; **every** collaborator and external interaction is mocked.
+3. **Centralized mock registry:** share reusable mirrored factories in tests/mocks/mirror; import them into tests instead of defining inline or duplicate mocks.
+4. **Pairwise interaction tests:** instantiate exactly the collaborating classes A and B as real; mock all other downstream collaborators required by either.
+5. **Business tests:** run real internal business/domain classes; mock only infrastructure and external service boundaries.
+6. **Regression tests:** run complete workflows on real representative datasets with real/live/containerized participating services, **without participating-service mocks**; this is a separate pre-merge/pre-deployment gateway.
+7. **Split topology:** class-centric unit/interaction/mocks/manifests mirror production source paths; business and regression tests are process-oriented, never source-mirrored.
+
+**Mandatory verification before reporting success:** classify each test's tier, explicitly identify real classes and mocked collaborators, check the relevant rule, and report any violation. Never claim that MATMA's CLI automatically checks all real-versus-mock boundaries: agents must inspect them. If a safe real-service regression environment is unavailable, report the regression gateway as blocked/not run instead of weakening Rule 6.
+
+
 Invoke for MATMA setup, validation, dependency indexing, unit/interaction test scaffolding, real behavioral test authoring or four-tier test-selection tasks in an accessible Laravel workspace. MATMA is not directly supported in non-Laravel PHP projects.
 
-Read references/commands.md, references/test-tiers.md and optional verification-registry.example.yaml. Use actual project paths and explicit user-owned fixtures.
+Read references/commands.md after the mandatory methodology references above, and optional verification-registry.example.yaml only for user-owned workflow registration. Use actual project paths and explicit user-owned fixtures.
 
 1. Verify the active workspace contains the user's Laravel artisan and composer.json, check real source/test structure, PHP/Laravel versions and execution permissions. Confirm MATMA Composer installation through private VCS if needed; do not circumvent advisories.
 2. Run php artisan matma:validate --check --format=json. Fix only substantiated structural errors and preserve native PSR-4 source layout.
