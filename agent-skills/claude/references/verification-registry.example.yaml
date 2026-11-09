@@ -1,0 +1,15 @@
+# Example only. Copy and edit in the consuming app as tests/matma-verification.yaml.
+schema_version: 1
+business:
+  - id: order-checkout-workflow
+    sources:
+      - app/Services/OrderService.php
+      - 'App\Services\OrderService'
+    tests:
+      - tests/business/OrderCheckoutWorkflowTest.php
+regression:
+  - id: order-discount-issue-123
+    sources:
+      - app/Services/OrderService.php
+    tests:
+      - tests/regression/OrderDiscountRegressionTest.php
