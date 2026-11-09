@@ -2,12 +2,6 @@
 
 MATMA is an agent-oriented testing architecture for PHP/Laravel. It preserves the host project's PSR-4 conventions and places mirrored tests and centralized mocks under the project's `tests/` directory, with dependency manifests generated on demand rather than committed.
 
-## Implementation status
-
-**Phases 1–6 are implemented and CI-verified.** MATMA discovers and validates PHP symbols, builds deterministic dependency manifests, safely scaffolds explicitly failing unit/interaction tests and centralized PHPUnit mock factories, and selects verification through read-only `matma:impact`. All four Artisan commands work; none rewrites production PHP or automatically executes tests. **Release preparation is complete, but no version tag, GitHub Release, or Packagist publication has been created.**
-
-Architecture: [accepted ADR](AIDocumentation/ARCHITECTURE_DECISIONS.md) · [task checklist](AIDocumentation/TASKS.md) · [Phase 1 implementation details](AIDocumentation/PHASE_1_IMPLEMENTATION.md) · [Phase 2 implementation details](AIDocumentation/PHASE_2_IMPLEMENTATION.md) · [Phase 3 implementation details](AIDocumentation/PHASE_3_IMPLEMENTATION.md) · [Phase 4 implementation details](AIDocumentation/PHASE_4_IMPLEMENTATION.md) · [Phase 5 implementation details](AIDocumentation/PHASE_5_IMPLEMENTATION.md) · [Phase 6 implementation details](AIDocumentation/PHASE_6_IMPLEMENTATION.md) · [adoption guide](AIDocumentation/ADOPTION_GUIDE.md) · [release checklist](AIDocumentation/RELEASE_CHECKLIST.md) · [changelog](CHANGELOG.md)
-
 ## Compatibility
 
 - PHP **8.2+**.
@@ -17,7 +11,7 @@ Architecture: [accepted ADR](AIDocumentation/ARCHITECTURE_DECISIONS.md) · [task
 
 ## Installation
 
-The repository is currently private and is **not published on Packagist**. From a Laravel application with GitHub access to the repository:
+From a Laravel application with GitHub access to the repository:
 
 ```bash
 composer config repositories.matma-php vcs https://github.com/rzepeda/matma-php
